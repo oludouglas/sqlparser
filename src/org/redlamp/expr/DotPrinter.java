@@ -35,4 +35,10 @@ public class DotPrinter implements Visitor<String> {
 		return binOpNodeId;
 	}
 
+	@Override
+	public String visitStrLiteral(StrLiteral strLiteral) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

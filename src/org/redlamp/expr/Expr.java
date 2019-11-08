@@ -4,7 +4,7 @@ public abstract class Expr {
 
 	public abstract String toStr();
 
-	public abstract int eval();
+	public abstract String eval();
 
 	public abstract <T> T accept(Visitor<T> v);
 

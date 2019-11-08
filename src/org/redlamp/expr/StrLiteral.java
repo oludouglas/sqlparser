@@ -1,30 +1,30 @@
 package org.redlamp.expr;
 
-public class IntLiteral extends Expr {
+public class StrLiteral extends Expr {
 
-	int i;
+	String name;
 
-	public IntLiteral(int i) {
+	public StrLiteral(String name) {
 		super();
-		this.i = i;
+		this.name = name;
 	}
 
 	@Override
 	public String toStr() {
 		// TODO Auto-generated method stub
-		return "" + i;
+		return name;
 	}
 
 	@Override
 	public String eval() {
 		// TODO Auto-generated method stub
-		return "" + i;
+		return name;
 	}
 
 	@Override
 	public <T> T accept(Visitor<T> v) {
 		// TODO Auto-generated method stub
-		return v.visitIntLiteral(this);
+		return v.visitStrLiteral(this);
 	}
 
 }

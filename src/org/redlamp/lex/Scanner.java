@@ -3,21 +3,22 @@ package org.redlamp.lex;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PushbackInputStream;
 
 public class Scanner {
 
-	private InputStream inputStream;
+	private PushbackInputStream inputStream;
 	private char peek;
-	private int pos;
+	private int pos = -1;
 
 	public Scanner(InputStream inputStream) {
 		super();
-		this.inputStream = inputStream;
+		this.inputStream = new PushbackInputStream(inputStream);
 	}
 
 	public Scanner(String inputString) {
 		super();
-		this.inputStream = new ByteArrayInputStream(inputString.getBytes());
+		this.inputStream = new PushbackInputStream(new ByteArrayInputStream(inputString.getBytes()));
 	}
 
 	public char next() {
@@ -31,8 +32,14 @@ public class Scanner {
 	}
 
 	public char peek() {
-		// TODO Auto-generated method stub
-		return peek;
+		char next = next();
+		try {
+			inputStream.unread(next);
+			pos--;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return next;
 	}
 
 	public int pos() {

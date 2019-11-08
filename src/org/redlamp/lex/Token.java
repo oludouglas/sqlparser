@@ -3,8 +3,8 @@ package org.redlamp.lex;
 public class Token {
 
 	public enum TokenClass {
-		IDENT, NUMBER, PLUS, MINUS, MULT, DIV, KEYWORD, GT, LT, LEQ, GEQ, EQ, SINGLE_QUOTE, DOUBLE_QUOTE, END, LPAREN,
-		RPAREN, COMMA, NONE, UNDERSCORE, LPAR, RPAR, BEGIN
+		IDENT, NUMBER, PLUS, MINUS, MULT, DIV, KEYWORD, GT, LT, LEQ, GEQ, EQ, SINGLE_QUOTE, DOUBLE_QUOTE, END, COMMA,
+		NONE, UNDERSCORE, LPAR, RPAR, BEGIN, STR
 	}
 
 	final TokenClass tokenClass;
@@ -34,7 +34,7 @@ public class Token {
 
 	@Override
 	public String toString() {
-		return " [tokenClass:'" + tokenClass + "', data:'" + data + "']";
+		return " [tokenClass:" + tokenClass + ", value: " + data + " ]";
 	}
 
 }

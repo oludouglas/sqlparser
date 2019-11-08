@@ -1,28 +1,34 @@
 package org.redlamp.expr;
 
-public class Eval implements Visitor<Integer> {
+public class Eval implements Visitor<String> {
 
 	@Override
-	public Integer visitIntLiteral(IntLiteral i) {
+	public String visitIntLiteral(IntLiteral i) {
 		// TODO Auto-generated method stub
-		return i.i;
+		return "" + i.i;
 	}
 
 	@Override
-	public Integer visitBiOp(BinOp bo) {
+	public String visitBiOp(BinOp bo) {
 
 		switch (bo.op) {
 		case ADD:
-			return bo.lhs.accept(this) + bo.rhs.accept(this);
+			return "" + Integer.parseInt(bo.lhs.accept(this)) + Integer.parseInt(bo.rhs.accept(this));
 		case SUB:
-			return bo.lhs.accept(this) - bo.rhs.accept(this);
+			return "" + (Integer.parseInt(bo.lhs.accept(this)) - Integer.parseInt(bo.rhs.accept(this)));
 		case MUL:
-			return bo.lhs.accept(this) * bo.rhs.accept(this);
+			return "" + Integer.parseInt(bo.lhs.accept(this)) * Integer.parseInt(bo.rhs.accept(this));
 		case DIV:
-			return bo.lhs.accept(this) / bo.rhs.accept(this);
+			return "" + Integer.parseInt(bo.lhs.accept(this)) / Integer.parseInt(bo.rhs.accept(this));
 		default:
-			return 0;
+			return "0";
 		}
+	}
+
+	@Override
+	public String visitStrLiteral(StrLiteral strLiteral) {
+		// TODO Auto-generated method stub
+		return strLiteral.name;
 	}
 
 }

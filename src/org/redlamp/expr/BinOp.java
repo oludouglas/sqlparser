@@ -22,18 +22,18 @@ public class BinOp extends Expr {
 	}
 
 	@Override
-	public int eval() {
+	public String eval() {
 		switch (op) {
 		case ADD:
 			return lhs.eval() + rhs.eval();
 		case SUB:
-			return lhs.eval() - rhs.eval();
+			return String.valueOf(Integer.parseInt(lhs.eval()) - Integer.parseInt(rhs.eval()));
 		case MUL:
-			return lhs.eval() * rhs.eval();
+			return String.valueOf(Integer.parseInt(lhs.eval()) * Integer.parseInt(rhs.eval()));
 		case DIV:
-			return lhs.eval() / rhs.eval();
+			return String.valueOf(Integer.parseInt(lhs.eval()) / Integer.parseInt(rhs.eval()));
 		default:
-			return 0;
+			return "0";
 		}
 	}
 

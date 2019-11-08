@@ -14,4 +14,10 @@ public class ToStr implements Visitor<String> {
 		return bo.lhs.accept(this) + bo.op.name() + bo.rhs.accept(this);
 	}
 
+	@Override
+	public String visitStrLiteral(StrLiteral strLiteral) {
+		// TODO Auto-generated method stub
+		return strLiteral.name;
+	}
+
 }

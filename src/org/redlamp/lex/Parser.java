@@ -6,39 +6,78 @@ import org.redlamp.expr.BinOp;
 import org.redlamp.expr.Expr;
 import org.redlamp.expr.IntLiteral;
 import org.redlamp.expr.Op;
+import org.redlamp.expr.StrLiteral;
 import org.redlamp.lex.Token.TokenClass;
-import org.redlamp.rec.ParseException;
 
 public class Parser {
 
 	Token token;
 	Tokenizer tokenizer;
+	StringBuilder errorLog = new StringBuilder();
 
 	public Parser(InputStream inputStream) {
 		this.tokenizer = new Tokenizer(inputStream);
 	}
 
 	void parseStmts() {
+		nextToken();
 		parseStmt();
 		expect(TokenClass.END);
 	}
 
+//	USE database1;
+//	SELECT id, name, address FROM users WHERE is_customer IS NOT NULL ORDER BY created;
+//	INSERT INTO user_notes (id, user_id, note, created) VALUES (1, 1, "Note 1", NOW());
+//	DELETE FROM database2.logs WHERE id < 1000;
+
 	void parseStmt() {
-		if (accept(TokenClass.IDENT)) {
-			if (lookAhead(1) == TokenClass.LPAR)
-				parseFuncCall();
-			else if (lookAhead(1) == TokenClass.EQ) {
-				parseAssign();
-			} else
+		if (accept(TokenClass.KEYWORD)) {// insert | delete
+			if (lookAhead(1) == TokenClass.KEYWORD) { // from | into
+				expect(TokenClass.KEYWORD); // move to (from | into)
+				expect(TokenClass.IDENT); // user_notes | database2.logs
+				if (lookAhead(1) == TokenClass.LPAR) {
+					parseFuncCall();
+					expect(TokenClass.KEYWORD); // values
+					parseFuncCall();
+				} else if (lookAhead(1) == TokenClass.KEYWORD) {
+					expect(TokenClass.KEYWORD);
+					parseAssign();
+				} else
+					error();
+			} else {
 				error();
+			}
 		} else
 			error();
 	}
 
 	void parseAssign() {
 		expect(TokenClass.IDENT);
-		expect(TokenClass.EQ);
+		expect(TokenClass.LT);
 		parseExpr();
+	}
+
+//	INSERT INTO user_notes (id, user_id, note, created) VALUES (1, 1, "Note 1", NOW());
+	void parseFuncCall() {
+//		expect(TokenClass.IDENT);
+		expect(TokenClass.LPAR);
+		parseArgList();
+		expect(TokenClass.RPAR);
+	}
+
+	void parseArgList() {
+		if (accept(TokenClass.IDENT)) {
+			nextToken();
+			parsArgRep();
+		}
+	}
+
+	void parsArgRep() {
+		if (accept(TokenClass.COMMA)) {
+			nextToken();
+			expect(TokenClass.IDENT);
+			parsArgRep();
+		}
 	}
 
 	Expr parseExpr() {
@@ -69,33 +108,6 @@ public class Parser {
 		}
 		return lhs;
 	}
-	
-	void parseFuncCall() {
-		expect(TokenClass.IDENT);
-		expect(TokenClass.LPAR);
-		parseArgList();
-		expect(TokenClass.RPAR);
-	}
-
-	void parseArgList() {
-		if (accept(TokenClass.IDENT)) {
-			nextToken();
-			parsArgRep();
-		}
-	}
-
-	void parsArgRep() {
-		if (accept(TokenClass.COMMA)) {
-			nextToken();
-			expect(TokenClass.IDENT);
-			parsArgRep();
-		}
-	}
-
-	private boolean accept(TokenClass ident) {
-		// TODO Auto-generated method stub
-		return false;
-	}
 
 	Expr parseFactor() {
 		if (accept(TokenClass.LPAR)) {
@@ -113,37 +125,44 @@ public class Parser {
 		return new IntLiteral(i);
 	}
 
+	Expr parseIdent() {
+		Token n = expect(TokenClass.IDENT);
+		return new StrLiteral(n.data);
+	}
+
 	void nextToken() {
 		token = tokenizer.next();
 	}
 
+	private boolean accept(TokenClass ident) {
+		boolean accepted = lookAhead(1) == ident;
+		if (!accepted) {
+			errorLog.setLength(0);
+			errorLog.append("Invalid token type accepted. Expecting ").append(ident).append(" but got ")
+					.append(token.tokenClass);
+		}
+		return accepted;
+	}
+
 	Token expect(TokenClass ident) {
-
-//		s = s.toLowerCase();
-//		if (s.startsWith("use")) {
-//			VARIABLE.parse(s.substring(3));
-//		} else if (s.startsWith("select")) {
-//			EXPRESSION.parse(s.substring(6));
-//		} else if (s.startsWith("insert")) {
-//			WHILE.parse(s.substring(5));
-//		} else if (s.startsWith("delete")) {
-//			WHILE.parse(s.substring(5));
-//		} else if (s.contains("=")) {
-//			ASSIGNMENT.parse(s);
-//		} else {
-//			throw new ParseException("Illegal statement: " + s);
-//		}
-
-		return null;
+		nextToken();
+		boolean expected = token.tokenClass == ident;
+		if (!expected) {
+			errorLog.setLength(0);
+			errorLog.append("Invalid token type expected. Expecting ").append(ident).append(" but got ")
+					.append(token.tokenClass);
+			return null;
+		}
+		return token;
 	}
 
 	private void error() {
-		// TODO Auto-generated method stub
-
+		System.err.println(errorLog.toString());
+		errorLog.setLength(0);
 	}
 
-	Token lookAhead(int i) {
-		return tokenizer.peek();
+	TokenClass lookAhead(int i) {
+		return tokenizer.peek().tokenClass;
 	}
 
 }

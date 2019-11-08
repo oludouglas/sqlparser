@@ -28,7 +28,7 @@ public class Tokenizer {
 		keywords.put("null", TokenClass.KEYWORD);
 		keywords.put("values", TokenClass.KEYWORD);
 		keywords.put("delete", TokenClass.KEYWORD);
-		keywords.put("now", TokenClass.KEYWORD);
+		keywords.put("now()", TokenClass.KEYWORD);
 		keywords.put("is", TokenClass.KEYWORD);
 	}
 
@@ -38,14 +38,26 @@ public class Tokenizer {
 	}
 
 	Token next() {
+		char next = scanner.next();
+		if (Character.isWhitespace(next))
+			return next();
+		return buildToken(next);
+	}
 
-		char c = scanner.next();
+	Token peek() {
+		char next = scanner.peek();
+		if (Character.isWhitespace(next))
+			return peek();
+		return buildToken(next);
+	}
+
+	Token buildToken(char c) {
 
 		if (Character.isWhitespace(c))
 			return next();
 
 		// operators
-		TokenClass ident = ident(c);
+		TokenClass ident = identify(c);
 		if (ident != TokenClass.NONE) {
 			return new Token(ident, Character.toString(c));
 		} else if (ident == TokenClass.END) {
@@ -53,19 +65,10 @@ public class Tokenizer {
 		}
 
 		// identifier
-		if (Character.isLetter(c)) {
-			StringBuilder builder = new StringBuilder();
-			builder.append(c);
-			c = scanner.next();
-			while (Character.isLetterOrDigit(c) || c == '_') {
-				builder.append(c);
-				c = scanner.next();
-			}
-			if (keywords.containsKey(builder.toString().toLowerCase())) {
-				return new Token(TokenClass.KEYWORD, builder.toString());
-			}
-			return new Token(TokenClass.IDENT, builder.toString());
-		}
+		Token letterToken = identifyLetter(c, c == '\'' || c == '\"');
+		if (letterToken != null)
+			return letterToken;
+
 		// number
 		if (Character.isDigit(c)) {
 			StringBuilder builder = new StringBuilder();
@@ -80,7 +83,34 @@ public class Tokenizer {
 		return null;
 	}
 
-	private TokenClass ident(char c) {
+	private Token identifyLetter(char c, boolean hasQuote) {
+		if (Character.isLetter(c) || hasQuote) {
+			StringBuilder builder = new StringBuilder();
+			builder.append(c);
+			c = scanner.next();
+			while (Character.isLetterOrDigit(c) || c == '_' || c == '.' || c == '(' || c == ')' || hasQuote) {
+				builder.append(c);
+				if (scanner.peek() == ')' && c == ')')
+					break;
+				c = scanner.next();
+				if (c == '\'' || c == '\"') {
+					builder.append(c);
+					c = scanner.next();
+					break;
+				}
+			}
+
+			if (keywords.containsKey(builder.toString().toLowerCase()))
+				return new Token(TokenClass.KEYWORD, builder.toString());
+			if ((builder.toString().startsWith("\"") || builder.toString().startsWith("\'")))
+				return new Token(TokenClass.STR, builder.toString());
+
+			return new Token(TokenClass.IDENT, builder.toString());
+		}
+		return null;
+	}
+
+	private TokenClass identify(char c) {
 		switch (c) {
 		case '+':
 			return TokenClass.PLUS;
@@ -93,17 +123,17 @@ public class Tokenizer {
 		case '=':
 			return TokenClass.EQ;
 		case ')':
-			return TokenClass.RPAREN;
+			return TokenClass.RPAR;
 		case '(':
-			return TokenClass.LPAREN;
+			return TokenClass.LPAR;
 		case ';':
 			return TokenClass.END;
 		case '_':
 			return TokenClass.UNDERSCORE;
-		case '\'':
-			return TokenClass.SINGLE_QUOTE;
-		case '\"':
-			return TokenClass.DOUBLE_QUOTE;
+//		case '\'':
+//			return TokenClass.SINGLE_QUOTE;
+//		case '\"':
+//			return TokenClass.DOUBLE_QUOTE;
 		case ',':
 			return TokenClass.COMMA;
 		case '>':
@@ -113,11 +143,6 @@ public class Tokenizer {
 		default:
 			return TokenClass.NONE;
 		}
-	}
-
-	public Token peek() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 }
