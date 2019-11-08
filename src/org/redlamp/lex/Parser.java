@@ -31,30 +31,22 @@ public class Parser {
 //	DELETE FROM database2.logs WHERE id < 1000;
 
 	void parseStmt() {
-		if (accept(TokenClass.KEYWORD)) {// insert | delete
-			if (lookAhead(1) == TokenClass.KEYWORD) { // from | into
-				expect(TokenClass.KEYWORD); // move to (from | into)
-				expect(TokenClass.IDENT); // user_notes | database2.logs
-				if (lookAhead(1) == TokenClass.LPAR) {
-					parseFuncCall();
-					expect(TokenClass.KEYWORD); // values
-					parseFuncCall();
-				} else if (lookAhead(1) == TokenClass.KEYWORD) {
-					expect(TokenClass.KEYWORD);
-					parseAssign();
-				} else
-					error();
-			} else {
+		expect(TokenClass.KEYWORD); // insert | delete | use |select
+		if (lookAhead(1) == TokenClass.KEYWORD) { // from | into
+			expect(TokenClass.KEYWORD); // move to (from | into)
+			expect(TokenClass.IDENT); // user_notes | database2.logs
+			if (lookAhead(1) == TokenClass.LPAR) {
+				parseFuncCall();
+				expect(TokenClass.KEYWORD); // values
+				parseFuncCall();
+			} else if (lookAhead(1) == TokenClass.KEYWORD) {
+				expect(TokenClass.KEYWORD);
+				parseAssign();
+			} else
 				error();
-			}
-		} else
+		} else { // variable
 			error();
-	}
-
-	void parseAssign() {
-		expect(TokenClass.IDENT);
-		expect(TokenClass.LT);
-		parseExpr();
+		}
 	}
 
 //	INSERT INTO user_notes (id, user_id, note, created) VALUES (1, 1, "Note 1", NOW());
@@ -80,11 +72,18 @@ public class Parser {
 		}
 	}
 
+	void parseAssign() {
+		expect(TokenClass.IDENT);
+//		expect(TokenClass.LT);
+		parseExpr();
+	}
+
 	Expr parseExpr() {
 		Expr lhs = parseTerm();
-		if (accept(TokenClass.PLUS | TokenClass.MINUS)) {
+		if (accept(TokenClass.LT)) {
+			nextToken();
 			Op op;
-			if (token.tokenClass == TokenClass.PLUS) {
+			if (token.tokenClass == TokenClass.LT) {
 				op = Op.ADD;
 			} else {
 				op = Op.SUB;
@@ -151,6 +150,7 @@ public class Parser {
 			errorLog.setLength(0);
 			errorLog.append("Invalid token type expected. Expecting ").append(ident).append(" but got ")
 					.append(token.tokenClass);
+			error();
 			return null;
 		}
 		return token;
