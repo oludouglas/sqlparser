@@ -90,14 +90,17 @@ public class Tokenizer {
 			c = scanner.next();
 			while (Character.isLetterOrDigit(c) || c == '_' || c == '.' || c == '(' || c == ')' || hasQuote) {
 				builder.append(c);
-				if (scanner.peek() == ')' && c == ')')
+
+				if (c == '\'' || c == '\"')
 					break;
+
+				if (scanner.peek() == ')' && c == '(') // close off functions
+					builder.append(scanner.next());
+
+				if (scanner.peek() == ')' && c != ')')
+					break;
+
 				c = scanner.next();
-				if (c == '\'' || c == '\"') {
-					builder.append(c);
-					c = scanner.next();
-					break;
-				}
 			}
 
 			if (keywords.containsKey(builder.toString().toLowerCase()))
@@ -130,10 +133,6 @@ public class Tokenizer {
 			return TokenClass.END;
 		case '_':
 			return TokenClass.UNDERSCORE;
-//		case '\'':
-//			return TokenClass.SINGLE_QUOTE;
-//		case '\"':
-//			return TokenClass.DOUBLE_QUOTE;
 		case ',':
 			return TokenClass.COMMA;
 		case '>':
