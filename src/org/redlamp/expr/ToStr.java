@@ -5,7 +5,7 @@ public class ToStr implements Visitor<String> {
 	@Override
 	public String visitIntLiteral(IntLiteral i) {
 		// TODO Auto-generated method stub
-		return "" + i.i;
+		return "" + i.number;
 	}
 
 	@Override

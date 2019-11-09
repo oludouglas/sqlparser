@@ -3,30 +3,6 @@ SELECT id, name, address FROM users WHERE is_customer IS NOT NULL ORDER BY creat
 INSERT INTO user_notes (id, user_id, note, created) VALUES (1, 1, "Note 1", NOW());
 DELETE FROM database2.logs WHERE id < 1000;
 
-
- [tokenClass:KEYWORD, value: INSERT ]
- [tokenClass:KEYWORD, value: INTO ]
- [tokenClass:IDENT, value: user_notes ]
- [tokenClass:LPAR, value: ( ]
- [tokenClass:IDENT, value: id ]
- [tokenClass:IDENT, value: user_id ]
- [tokenClass:IDENT, value: note ]
- [tokenClass:IDENT, value: created ]
- [tokenClass:RPAR, value: ) ]
- [tokenClass:KEYWORD, value: VALUES ]
- [tokenClass:LPAR, value: ( ]
- [tokenClass:NUMBER, value: 1 ]
- [tokenClass:NUMBER, value: 1 ]
- [tokenClass:STR, value: "Note 1" ]
- [tokenClass:COMMA, value: , ]
- [tokenClass:KEYWORD, value: NOW() ]
- [tokenClass:RPAR, value: ) ]
- [tokenClass:END, value: ; ]
-
-
-
-
-
 SELECT id, name, address FROM users WHERE is_customer IS NOT NULL ORDER BY created;
 
 AST: [Query(Query { ctes: [], body: Select(Select { distinct: false, projection: [UnnamedExpr(Identifier("id")), UnnamedExpr(Identifier("name")), UnnamedExpr(Identifier("address"))], from: [TableWithJoins { relation: Table { name: ObjectName(["users"]), alias: None, args: [], with_hints: [] }, joins: [] }], selection: Some(IsNotNull(Identifier("is_customer"))), group_by: [], having: None }), order_by: [OrderByExpr { expr: Identifier("created"), asc: None }], limit: None, offset: None, fetch: None })]

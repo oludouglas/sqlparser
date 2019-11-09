@@ -7,14 +7,15 @@ import org.redlamp.expr.Expr;
 import org.redlamp.expr.IntLiteral;
 import org.redlamp.expr.Op;
 import org.redlamp.expr.StrLiteral;
-import org.redlamp.expr.ToStr;
 import org.redlamp.lex.Token.TokenClass;
 
-public class Parser extends ToStr {
+public class Parser {
 
 	Token token;
 	Tokenizer tokenizer;
-	StringBuilder errorLog = new StringBuilder();
+	StringBuilder errorBuffer = new StringBuilder();
+	int statementCount = 0;
+	Expr[] expressions;
 
 	public Parser(InputStream inputStream) {
 		this.tokenizer = new Tokenizer(inputStream);
@@ -25,23 +26,18 @@ public class Parser extends ToStr {
 	}
 
 	public void parse() {
-		parseStmts();
-		System.out.println("Syntax OK");
+		while (accept(TokenClass.KEYWORD)) {
+			parseStatement();
+			expect(TokenClass.END);
+			statementCount++;
+		}
+		System.out.println("Parsed " + statementCount);
 	}
 
-	void parseStmts() {
-		parseStmt();
-		expect(TokenClass.END);
-	}
+//	AST: [Insert { table_name: ObjectName(["user_notes"]), columns: ["id", "user_id", "note", "created"], source: Query { ctes: [], body: Values(Values([[Value(Number("1")), Value(Number("1")), Identifier("\"Note 1\""), Function(Function { name: ObjectName(["NOW"]), args: [], over: None, distinct: false })]])), order_by: [], limit: None, offset: None, fetch: None } }]
 
-//	USE database1;
-//	SELECT id, name, address FROM users WHERE is_customer IS NOT NULL ORDER BY created;
-//	INSERT INTO user_notes (id, user_id, note, created) VALUES (1, 1, "Note 1", NOW());
-//	DELETE FROM database2.logs WHERE id < 1000;
-
-	void parseStmt() {
+	void parseStatement() {
 		expect(TokenClass.KEYWORD); // insert | delete | use |select
-
 		if (accept(TokenClass.KEYWORD)) { // from | into
 			expect(TokenClass.KEYWORD); // move to (from | into)
 			expect(TokenClass.IDENT); // user_notes | database2.logs
@@ -57,8 +53,6 @@ public class Parser extends ToStr {
 		} else if (accept(TokenClass.IDENT)) {
 			expect(TokenClass.IDENT);
 			if (accept(TokenClass.LPAR)) {
-				// INSERT INTO user_notes (id, user_id, note, created) VALUES (1, 1, \"Note 1\",
-				// NOW());
 				parseArgList();
 				expect(TokenClass.KEYWORD); // from
 				expect(TokenClass.IDENT); // table_nm
@@ -66,16 +60,20 @@ public class Parser extends ToStr {
 					expect(TokenClass.KEYWORD); // WHERE
 					parseAssign();
 				}
-			} else if (accept(TokenClass.COMMA)) { // select dialect
+			} else if (lookAhead(1) == TokenClass.COMMA) { // select dialect
 				parsArgRep();
-
+				expect(TokenClass.KEYWORD); // from
+				expect(TokenClass.IDENT); // table_nm
+				if (accept(TokenClass.KEYWORD)) { // if where clause is supported
+					expect(TokenClass.KEYWORD); // where
+					parseAssign();
+				}
 			}
-		} else { // select dialect
-//			error();
+		} else {
+			error();
 		}
 	}
 
-//	INSERT INTO user_notes (id, user_id, note, created) VALUES (1, 1, "Note 1", NOW());
 	void parseFuncCall() {
 		expect(TokenClass.LPAR);
 		parseArgList();
@@ -101,7 +99,6 @@ public class Parser extends ToStr {
 		}
 	}
 
-//	DELETE FROM database2.logs WHERE id < 1000;
 	void parseAssign() {
 		expect(TokenClass.IDENT);
 		if (accept(TokenClass.LT)) {
@@ -124,16 +121,7 @@ public class Parser extends ToStr {
 		Expr lhs = parseTerm();
 		if (accept(TokenClass.EQ)) {
 			nextToken();
-			Op op;
-			switch (token.tokenClass) {
-			case EQ:
-				op = Op.ADD;
-				break;
-			default:
-				op = Op.GTE;
-				break;
-			}
-			return new BinOp(op, lhs, parseExpr());
+			return new BinOp(Op.EQ, lhs, parseExpr());
 		}
 		return lhs;
 	}
@@ -141,13 +129,12 @@ public class Parser extends ToStr {
 	Expr parseTerm() {
 		Expr lhs = parseFactor();
 		if (accept(TokenClass.PLUS) || accept(TokenClass.MINUS)) {
-			Op op;
-			if (token.tokenClass == TokenClass.PLUS) {
-				op = Op.ADD;
-			} else {
-				op = Op.SUB;
-			}
 			nextToken();
+			Op op;
+			if (token.tokenClass == TokenClass.PLUS)
+				op = Op.ADD;
+			else
+				op = Op.SUB;
 			return new BinOp(op, lhs, parseTerm());
 		}
 		return lhs;
@@ -158,15 +145,23 @@ public class Parser extends ToStr {
 			Expr parseExpr = parseExpr();
 			expect(TokenClass.RPAR);
 			return parseExpr;
-		} else {
+		} else if (accept(TokenClass.NUMBER)) {
 			return parseNumber();
+		} else if (accept(TokenClass.STR)) {
+			return parseString();
 		}
+		return parseIdent();
 	}
 
 	Expr parseNumber() {
 		Token n = expect(TokenClass.NUMBER);
 		int i = Integer.parseInt(n.data);
 		return new IntLiteral(i);
+	}
+
+	Expr parseString() {
+		Token n = expect(TokenClass.STR);
+		return new StrLiteral(n.data);
 	}
 
 	Expr parseIdent() {
@@ -178,36 +173,29 @@ public class Parser extends ToStr {
 		token = tokenizer.next();
 	}
 
-	private boolean accept(TokenClass ident) {
-		TokenClass lookAhead = lookAhead(1);
-		boolean accepted = lookAhead == ident;
-		if (!accepted) {
-			errorLog.setLength(0);
-			errorLog.append("Invalid token type accepted. Expecting ").append(ident).append(" but got ")
-					.append(lookAhead);
-//			error();
-		}
-		return accepted;
+	boolean accept(TokenClass ident) {
+		return lookAhead(1) == ident;
 	}
 
 	Token expect(TokenClass ident) {
 		nextToken();
 		boolean expected = token.tokenClass == ident;
 		if (!expected) {
-			errorLog.setLength(0);
-			errorLog.append("Invalid token type expected. Expecting ").append(ident).append(" but got ")
+			errorBuffer.setLength(0);
+			errorBuffer.append("Invalid token type expected. Expecting ").append(ident).append(" but got ")
 					.append(token.tokenClass);
 			error();
 		}
 		return token;
 	}
 
-	private void error() {
-		throw new IllegalArgumentException(errorLog.toString());
+	void error() {
+		throw new IllegalArgumentException(errorBuffer.toString());
 	}
 
 	TokenClass lookAhead(int i) {
-		return tokenizer.peek().tokenClass;
+		Token peek = tokenizer.peek();
+		return peek != null ? peek.tokenClass : null;
 	}
 
 }

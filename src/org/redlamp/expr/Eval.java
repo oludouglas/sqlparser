@@ -5,12 +5,11 @@ public class Eval implements Visitor<String> {
 	@Override
 	public String visitIntLiteral(IntLiteral i) {
 		// TODO Auto-generated method stub
-		return "" + i.i;
+		return "" + i.number;
 	}
 
 	@Override
 	public String visitBiOp(BinOp bo) {
-
 		switch (bo.op) {
 		case ADD:
 			return "" + Integer.parseInt(bo.lhs.accept(this)) + Integer.parseInt(bo.rhs.accept(this));
@@ -27,7 +26,6 @@ public class Eval implements Visitor<String> {
 
 	@Override
 	public String visitStrLiteral(StrLiteral strLiteral) {
-		// TODO Auto-generated method stub
 		return strLiteral.name;
 	}
 

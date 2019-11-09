@@ -15,7 +15,7 @@ public class DotPrinter implements Visitor<String> {
 	@Override
 	public String visitIntLiteral(IntLiteral i) {
 		nodeCnt++;
-		writer.println("Node" + nodeCnt + "[label: \"Cst(" + i.i + ")\"]];");
+		writer.println("Node" + nodeCnt + "[label: \"Cst(" + i.number + ")\"]];");
 		return "Node" + nodeCnt;
 	}
 

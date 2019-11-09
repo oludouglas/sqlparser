@@ -1,5 +1,6 @@
 package org.redlamp.lex;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,7 +13,7 @@ public class Scanner {
 
 	public Scanner(InputStream inputStream) {
 		super();
-		this.inputStream = inputStream;
+		this.inputStream = new BufferedInputStream(inputStream);
 	}
 
 	public Scanner(String inputString) {
@@ -26,7 +27,8 @@ public class Scanner {
 
 	char next(boolean count) {
 		try {
-			peek = (char) inputStream.read();
+			if (inputStream.available() > 0)
+				peek = (char) inputStream.read();
 			if (count)
 				pos++;
 		} catch (IOException e) {

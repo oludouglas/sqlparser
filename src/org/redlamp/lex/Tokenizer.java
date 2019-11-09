@@ -71,14 +71,14 @@ public class Tokenizer {
 		}
 
 		// identifier
-		Token letterToken = identifyLetter(c, c == '\'' || c == '\"');
-		if (letterToken != null)
-			return letterToken;
+		Token token = identifyLetter(c, c == '\'' || c == '\"');
+		if (token != null)
+			return token;
 
 		// number
-		letterToken = identifyNumber(c);
-		if (letterToken != null)
-			return letterToken;
+		token = identifyNumber(c);
+		if (token != null)
+			return token;
 
 		return null;
 	}
@@ -108,33 +108,23 @@ public class Tokenizer {
 			c = scanner.next();
 			while (Character.isLetterOrDigit(c) || c == '_' || c == '.' || c == '(' || c == ')' || hasQuote) {
 				builder.append(c);
-
 				if (c == '\'' || c == '\"')
 					break;
-
 				if (scanner.peek() == ')' && c == '(') // close off functions
 					builder.append(scanner.next());
-
 				if (scanner.peek() == ')' && c != ')')
 					break;
-
 				if (scanner.peek() == ';')
 					break;
-
 				if (scanner.peek() == ',')
 					break;
-
 				c = scanner.next();
 			}
-
 			String stringLiteral = builder.toString();
-
 			if (keywords.containsKey(stringLiteral.toLowerCase()))
 				return new Token(TokenClass.KEYWORD, stringLiteral);
-
 			if ((stringLiteral.startsWith("\"") || stringLiteral.startsWith("\'")))
 				return new Token(TokenClass.STR, stringLiteral);
-
 			return new Token(TokenClass.IDENT, stringLiteral);
 		}
 		return null;
@@ -166,6 +156,10 @@ public class Tokenizer {
 			return TokenClass.GT;
 		case '<':
 			return TokenClass.LT;
+		case ' ':
+			return TokenClass.NONE;
+		case '\t':
+			return TokenClass.NONE;
 		default:
 			return TokenClass.NONE;
 		}
