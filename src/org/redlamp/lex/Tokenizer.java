@@ -43,7 +43,7 @@ public class Tokenizer {
 		initKeywords();
 	}
 
-	Token next() {
+	public Token next() {
 		if (peeked) {
 			peeked = false;
 			return peekedToken;
@@ -63,12 +63,11 @@ public class Tokenizer {
 	Token buildToken(char c) {
 
 		// operators
-		TokenClass ident = identify(c);
-		if (ident != TokenClass.NONE) {
+		TokenClass ident = identifyTokenClass(c);
+		if (ident != TokenClass.NONE)
 			return new Token(ident, Character.toString(c));
-		} else if (ident == TokenClass.END) {
+		else if (ident == TokenClass.END)
 			return null;
-		}
 
 		// identifier
 		Token token = identifyLetter(c, c == '\'' || c == '\"');
@@ -130,7 +129,7 @@ public class Tokenizer {
 		return null;
 	}
 
-	private TokenClass identify(char c) {
+	private TokenClass identifyTokenClass(char c) {
 		switch (c) {
 		case '+':
 			return TokenClass.PLUS;
@@ -157,9 +156,7 @@ public class Tokenizer {
 		case '<':
 			return TokenClass.LT;
 		case ' ':
-			return TokenClass.NONE;
 		case '\t':
-			return TokenClass.NONE;
 		default:
 			return TokenClass.NONE;
 		}

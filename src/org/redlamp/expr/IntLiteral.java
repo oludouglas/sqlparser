@@ -1,5 +1,9 @@
 package org.redlamp.expr;
 
+import org.redlamp.ast.ASTVisitor;
+import org.redlamp.ast.BaseType;
+import org.redlamp.ast.Expr;
+
 public class IntLiteral extends Expr {
 
 	int number;
@@ -10,20 +14,9 @@ public class IntLiteral extends Expr {
 	}
 
 	@Override
-	public String toStr() {
+	public <T> T accept(ASTVisitor<T> v) {
 		// TODO Auto-generated method stub
-		return "" + number;
-	}
-
-	@Override
-	public String eval() {
-		// TODO Auto-generated method stub
-		return "" + number;
-	}
-
-	@Override
-	public <T> T accept(Visitor<T> v) {
-		return v.visitIntLiteral(this);
+		return v.visitBaseType(BaseType.INT);
 	}
 
 }

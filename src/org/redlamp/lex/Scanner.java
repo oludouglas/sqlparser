@@ -11,6 +11,9 @@ public class Scanner {
 	private char peek;
 	private int pos = -1;
 
+	private int line = 1;
+	private int column = 0;
+
 	public Scanner(InputStream inputStream) {
 		super();
 		this.inputStream = new BufferedInputStream(inputStream);
@@ -27,10 +30,19 @@ public class Scanner {
 
 	char next(boolean count) {
 		try {
-			if (inputStream.available() > 0)
+			if (inputStream.available() > 0) {
 				peek = (char) inputStream.read();
-			if (count)
-				pos++;
+				if (count)
+					pos++;
+				if (peek == '\n' || peek == '\r') {
+					line++;
+					column = 0;
+				} else {
+					column++;
+				}
+
+			} else
+				peek = ';';
 		} catch (IOException e) {
 			peek = ' ';
 		}
@@ -48,8 +60,20 @@ public class Scanner {
 		return next;
 	}
 
-	public int pos() {
-		return pos;
+	public int getLine() {
+		return line;
+	}
+
+	public void setLine(int line) {
+		this.line = line;
+	}
+
+	public int getColumn() {
+		return column;
+	}
+
+	public void setColumn(int column) {
+		this.column = column;
 	}
 
 }

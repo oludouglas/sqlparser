@@ -2,10 +2,8 @@ package org.redlamp.lex;
 
 import java.io.InputStream;
 
-import org.redlamp.expr.BinOp;
-import org.redlamp.expr.Expr;
+import org.redlamp.ast.Expr;
 import org.redlamp.expr.IntLiteral;
-import org.redlamp.expr.Op;
 import org.redlamp.expr.StrLiteral;
 import org.redlamp.lex.Token.TokenClass;
 
@@ -14,8 +12,6 @@ public class Parser {
 	Token token;
 	Tokenizer tokenizer;
 	StringBuilder errorBuffer = new StringBuilder();
-	int statementCount = 0;
-	Expr[] expressions;
 
 	public Parser(InputStream inputStream) {
 		this.tokenizer = new Tokenizer(inputStream);
@@ -28,19 +24,17 @@ public class Parser {
 	public void parse() {
 		while (accept(TokenClass.KEYWORD)) {
 			parseStatement();
-			expect(TokenClass.END);
-			statementCount++;
 		}
-		System.out.println("Parsed " + statementCount);
+		System.out.println("OK");
 	}
 
-//	AST: [Insert { table_name: ObjectName(["user_notes"]), columns: ["id", "user_id", "note", "created"], source: Query { ctes: [], body: Values(Values([[Value(Number("1")), Value(Number("1")), Identifier("\"Note 1\""), Function(Function { name: ObjectName(["NOW"]), args: [], over: None, distinct: false })]])), order_by: [], limit: None, offset: None, fetch: None } }]
+//	[Insert { table_name: ObjectName(["user_notes"]), columns: ["id", "user_id", "note", "created"], source: Query { ctes: [], body: Values(Values([[Value(Number("1")), Value(Number("1")), Identifier("\"Note 1\""), Function(Function { name: ObjectName(["NOW"]), args: [], over: None, distinct: false })]])), order_by: [], limit: None, offset: None, fetch: None } }]
 
 	void parseStatement() {
 		expect(TokenClass.KEYWORD); // insert | delete | use |select
 		if (accept(TokenClass.KEYWORD)) { // from | into
-			expect(TokenClass.KEYWORD); // move to (from | into)
-			expect(TokenClass.IDENT); // user_notes | database2.logs
+			parseKeyWord();
+			parseIdent();
 			if (lookAhead(1) == TokenClass.LPAR) { // insert
 				parseFuncCall();
 				expect(TokenClass.KEYWORD); // values
@@ -69,8 +63,14 @@ public class Parser {
 					parseAssign();
 				}
 			}
-		} else {
-			error();
+		}
+		expect(TokenClass.END);
+	}
+
+	void parseKeyWord() {
+		if (accept(TokenClass.KEYWORD)) {
+			expect(TokenClass.KEYWORD);
+			parseKeyWord();
 		}
 	}
 
@@ -118,26 +118,11 @@ public class Parser {
 	}
 
 	Expr parseExpr() {
-		Expr lhs = parseTerm();
-		if (accept(TokenClass.EQ)) {
-			nextToken();
-			return new BinOp(Op.EQ, lhs, parseExpr());
-		}
-		return lhs;
+		return parseTerm();
 	}
 
 	Expr parseTerm() {
-		Expr lhs = parseFactor();
-		if (accept(TokenClass.PLUS) || accept(TokenClass.MINUS)) {
-			nextToken();
-			Op op;
-			if (token.tokenClass == TokenClass.PLUS)
-				op = Op.ADD;
-			else
-				op = Op.SUB;
-			return new BinOp(op, lhs, parseTerm());
-		}
-		return lhs;
+		return parseFactor();
 	}
 
 	Expr parseFactor() {
@@ -179,8 +164,7 @@ public class Parser {
 
 	Token expect(TokenClass ident) {
 		nextToken();
-		boolean expected = token.tokenClass == ident;
-		if (!expected) {
+		if (token.tokenClass != ident) {
 			errorBuffer.setLength(0);
 			errorBuffer.append("Invalid token type expected. Expecting ").append(ident).append(" but got ")
 					.append(token.tokenClass);
@@ -193,7 +177,7 @@ public class Parser {
 		throw new IllegalArgumentException(errorBuffer.toString());
 	}
 
-	TokenClass lookAhead(int i) {
+	TokenClass lookAhead(int stepsAhead) {
 		Token peek = tokenizer.peek();
 		return peek != null ? peek.tokenClass : null;
 	}

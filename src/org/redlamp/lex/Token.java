@@ -7,8 +7,8 @@ public class Token {
 		NONE, UNDERSCORE, LPAR, RPAR, BEGIN, STR
 	}
 
-	final TokenClass tokenClass;
-	final String data;
+	public final TokenClass tokenClass;
+	public final String data;
 	final int pos;
 
 	public Token(TokenClass tokenClass) {
@@ -34,7 +34,10 @@ public class Token {
 
 	@Override
 	public String toString() {
-		return " [tokenClass:" + tokenClass + ", value: " + data + " ]";
+		if (data.equals(""))
+			return tokenClass.toString();
+		else
+			return tokenClass.toString() + "(" + data + ")";
 	}
 
 }

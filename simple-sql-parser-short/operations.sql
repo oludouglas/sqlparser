@@ -7,8 +7,6 @@ SELECT id, name, address FROM users WHERE is_customer IS NOT NULL ORDER BY creat
 
 AST: [Query(Query { ctes: [], body: Select(Select { distinct: false, projection: [UnnamedExpr(Identifier("id")), UnnamedExpr(Identifier("name")), UnnamedExpr(Identifier("address"))], from: [TableWithJoins { relation: Table { name: ObjectName(["users"]), alias: None, args: [], with_hints: [] }, joins: [] }], selection: Some(IsNotNull(Identifier("is_customer"))), group_by: [], having: None }), order_by: [OrderByExpr { expr: Identifier("created"), asc: None }], limit: None, offset: None, fetch: None })]
 
-
-
 INSERT INTO user_notes (id, user_id, note, created) VALUES (1, 1, "Note 1", NOW());
 
 AST: [Insert { table_name: ObjectName(["user_notes"]), columns: ["id", "user_id", "note", "created"], source: Query { ctes: [], body: Values(Values([[Value(Number("1")), Value(Number("1")), Identifier("\"Note 1\""), Function(Function { name: ObjectName(["NOW"]), args: [], over: None, distinct: false })]])), order_by: [], limit: None, offset: None, fetch: None } }]
