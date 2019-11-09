@@ -24,7 +24,11 @@ public class Parser extends ToStr {
 		this.tokenizer = new Tokenizer(inputStream);
 	}
 
-	public void parseStmts() {
+	public void parse() {
+		parseStmts();
+	}
+
+	void parseStmts() {
 		parseStmt();
 		expect(TokenClass.END);
 	}
@@ -50,13 +54,17 @@ public class Parser extends ToStr {
 			} else
 				error();
 		} else if (accept(TokenClass.IDENT)) {
-//			INSERT INTO user_notes (id, user_id, note, created) VALUES (1, 1, \"Note 1\", NOW());
-			parseArgList();
-			expect(TokenClass.KEYWORD); // from
-			expect(TokenClass.IDENT); // table_nm
-			if (lookAhead(1) == TokenClass.KEYWORD) { // where condition
-				expect(TokenClass.KEYWORD); // WHERE
-				parseAssign();
+			expect(TokenClass.IDENT);
+			if (accept(TokenClass.LPAR)) {
+				// INSERT INTO user_notes (id, user_id, note, created) VALUES (1, 1, \"Note 1\",
+				// NOW());
+				parseArgList();
+				expect(TokenClass.KEYWORD); // from
+				expect(TokenClass.IDENT); // table_nm
+				if (lookAhead(1) == TokenClass.KEYWORD) { // where condition
+					expect(TokenClass.KEYWORD); // WHERE
+					parseAssign();
+				}
 			}
 		} else { // select dialect
 			error();
@@ -164,11 +172,13 @@ public class Parser extends ToStr {
 	}
 
 	private boolean accept(TokenClass ident) {
-		boolean accepted = lookAhead(1) == ident;
+		TokenClass lookAhead = lookAhead(1);
+		boolean accepted = lookAhead == ident;
 		if (!accepted) {
 			errorLog.setLength(0);
 			errorLog.append("Invalid token type accepted. Expecting ").append(ident).append(" but got ")
-					.append(token.tokenClass);
+					.append(lookAhead);
+//			error();
 		}
 		return accepted;
 	}
