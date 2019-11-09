@@ -7,9 +7,10 @@ import org.redlamp.expr.Expr;
 import org.redlamp.expr.IntLiteral;
 import org.redlamp.expr.Op;
 import org.redlamp.expr.StrLiteral;
+import org.redlamp.expr.ToStr;
 import org.redlamp.lex.Token.TokenClass;
 
-public class Parser {
+public class Parser extends ToStr {
 
 	Token token;
 	Tokenizer tokenizer;
@@ -19,8 +20,11 @@ public class Parser {
 		this.tokenizer = new Tokenizer(inputStream);
 	}
 
-	void parseStmts() {
-		nextToken();
+	public Parser(String inputStream) {
+		this.tokenizer = new Tokenizer(inputStream);
+	}
+
+	public void parseStmts() {
 		parseStmt();
 		expect(TokenClass.END);
 	}
@@ -32,19 +36,29 @@ public class Parser {
 
 	void parseStmt() {
 		expect(TokenClass.KEYWORD); // insert | delete | use |select
-		if (lookAhead(1) == TokenClass.KEYWORD) { // from | into
+
+		if (accept(TokenClass.KEYWORD)) { // from | into
 			expect(TokenClass.KEYWORD); // move to (from | into)
 			expect(TokenClass.IDENT); // user_notes | database2.logs
-			if (lookAhead(1) == TokenClass.LPAR) {
+			if (lookAhead(1) == TokenClass.LPAR) { // insert
 				parseFuncCall();
 				expect(TokenClass.KEYWORD); // values
 				parseFuncCall();
 			} else if (lookAhead(1) == TokenClass.KEYWORD) {
-				expect(TokenClass.KEYWORD);
+				expect(TokenClass.KEYWORD);// from
 				parseAssign();
 			} else
 				error();
-		} else { // variable
+		} else if (accept(TokenClass.IDENT)) {
+//			INSERT INTO user_notes (id, user_id, note, created) VALUES (1, 1, \"Note 1\", NOW());
+			parseArgList();
+			expect(TokenClass.KEYWORD); // from
+			expect(TokenClass.IDENT); // table_nm
+			if (lookAhead(1) == TokenClass.KEYWORD) { // where condition
+				expect(TokenClass.KEYWORD); // WHERE
+				parseAssign();
+			}
+		} else { // select dialect
 			error();
 		}
 	}
@@ -72,21 +86,37 @@ public class Parser {
 		}
 	}
 
+//	SELECT id, name, address FROM users WHERE is_customer IS NOT NULL ORDER BY created;
 	void parseAssign() {
 		expect(TokenClass.IDENT);
-//		expect(TokenClass.LT);
-		parseExpr();
+		if (accept(TokenClass.LT)) {
+			expect(TokenClass.LT);
+			parseExpr();
+		} else if (accept(TokenClass.LT)) {
+			expect(TokenClass.LT);
+			parseExpr();
+		} else if (accept(TokenClass.KEYWORD)) {
+			expect(TokenClass.KEYWORD); // is
+			expect(TokenClass.KEYWORD); // not
+			expect(TokenClass.KEYWORD); // null
+			expect(TokenClass.KEYWORD); // order
+			expect(TokenClass.KEYWORD); // by
+			expect(TokenClass.IDENT); // created
+		}
 	}
 
 	Expr parseExpr() {
 		Expr lhs = parseTerm();
-		if (accept(TokenClass.LT)) {
+		if (accept(TokenClass.EQ)) {
 			nextToken();
 			Op op;
-			if (token.tokenClass == TokenClass.LT) {
+			switch (token.tokenClass) {
+			case EQ:
 				op = Op.ADD;
-			} else {
-				op = Op.SUB;
+				break;
+			default:
+				op = Op.GTE;
+				break;
 			}
 			return new BinOp(op, lhs, parseExpr());
 		}
@@ -95,9 +125,9 @@ public class Parser {
 
 	Expr parseTerm() {
 		Expr lhs = parseFactor();
-		if (accept(TokenClass.MULT | TokenClass.DIV)) {
+		if (accept(TokenClass.MULT) || accept(TokenClass.DIV)) {
 			Op op;
-			if (token == TokenClass.TIMES) {
+			if (token.tokenClass == TokenClass.MULT) {
 				op = Op.MUL;
 			} else {
 				op = Op.DIV;
@@ -151,14 +181,12 @@ public class Parser {
 			errorLog.append("Invalid token type expected. Expecting ").append(ident).append(" but got ")
 					.append(token.tokenClass);
 			error();
-			return null;
 		}
 		return token;
 	}
 
 	private void error() {
-		System.err.println(errorLog.toString());
-		errorLog.setLength(0);
+		throw new IllegalArgumentException(errorLog.toString());
 	}
 
 	TokenClass lookAhead(int i) {
