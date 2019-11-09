@@ -9,6 +9,8 @@ import org.redlamp.lex.Token.TokenClass;
 public class Tokenizer {
 
 	Scanner scanner;
+	boolean peeked = false;
+	Token currentToken, peekedToken;
 	final Map<String, TokenClass> keywords = new HashMap<String, TokenClass>();
 
 	public Tokenizer(InputStream inputStream) {
@@ -38,6 +40,10 @@ public class Tokenizer {
 	}
 
 	Token next() {
+		if (peeked) {
+			peeked = false;
+			return peekedToken;
+		}
 		char next = scanner.next();
 		if (Character.isWhitespace(next))
 			return next();
@@ -45,16 +51,12 @@ public class Tokenizer {
 	}
 
 	Token peek() {
-		char next = scanner.peek();
-		if (Character.isWhitespace(next))
-			return peek();
-		return buildToken(next);
+		peekedToken = next();
+		peeked = true;
+		return peekedToken;
 	}
 
 	Token buildToken(char c) {
-
-		if (Character.isWhitespace(c))
-			return next();
 
 		// operators
 		TokenClass ident = identify(c);
@@ -98,6 +100,9 @@ public class Tokenizer {
 					builder.append(scanner.next());
 
 				if (scanner.peek() == ')' && c != ')')
+					break;
+
+				if (scanner.peek() == ';')
 					break;
 
 				c = scanner.next();
