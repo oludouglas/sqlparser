@@ -3,6 +3,7 @@ package org.redlamp.syn;
 import org.redlamp.expr.BinOp;
 import org.redlamp.expr.IntLiteral;
 import org.redlamp.expr.Op;
+import org.redlamp.expr.StrLiteral;
 import org.redlamp.expr.Visitor;
 
 public class TypeChecker implements Visitor<Type> {
@@ -54,6 +55,12 @@ public class TypeChecker implements Visitor<Type> {
 	public Type visitBiOp(BinOp bo) {
 		// TODO Auto-generated method stub
 		return bo.accept(this);
+	}
+
+	@Override
+	public Type visitStrLiteral(StrLiteral strLiteral) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
