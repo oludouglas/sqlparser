@@ -4,6 +4,27 @@ INSERT INTO user_notes (id, user_id, note, created) VALUES (1, 1, "Note 1", NOW(
 DELETE FROM database2.logs WHERE id < 1000;
 
 
+ [tokenClass:KEYWORD, value: INSERT ]
+ [tokenClass:KEYWORD, value: INTO ]
+ [tokenClass:IDENT, value: user_notes ]
+ [tokenClass:LPAR, value: ( ]
+ [tokenClass:IDENT, value: id ]
+ [tokenClass:IDENT, value: user_id ]
+ [tokenClass:IDENT, value: note ]
+ [tokenClass:IDENT, value: created ]
+ [tokenClass:RPAR, value: ) ]
+ [tokenClass:KEYWORD, value: VALUES ]
+ [tokenClass:LPAR, value: ( ]
+ [tokenClass:NUMBER, value: 1 ]
+ [tokenClass:NUMBER, value: 1 ]
+ [tokenClass:STR, value: "Note 1" ]
+ [tokenClass:COMMA, value: , ]
+ [tokenClass:KEYWORD, value: NOW() ]
+ [tokenClass:RPAR, value: ) ]
+ [tokenClass:END, value: ; ]
+
+
+
 
 
 SELECT id, name, address FROM users WHERE is_customer IS NOT NULL ORDER BY created;

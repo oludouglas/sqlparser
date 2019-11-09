@@ -26,6 +26,7 @@ public class Parser extends ToStr {
 
 	public void parse() {
 		parseStmts();
+		System.out.println("Syntax OK");
 	}
 
 	void parseStmts() {
@@ -49,7 +50,7 @@ public class Parser extends ToStr {
 				expect(TokenClass.KEYWORD); // values
 				parseFuncCall();
 			} else if (lookAhead(1) == TokenClass.KEYWORD) {
-				expect(TokenClass.KEYWORD);// from
+				expect(TokenClass.KEYWORD);// from || where
 				parseAssign();
 			} else
 				error();
@@ -65,22 +66,24 @@ public class Parser extends ToStr {
 					expect(TokenClass.KEYWORD); // WHERE
 					parseAssign();
 				}
+			} else if (accept(TokenClass.COMMA)) { // select dialect
+				parsArgRep();
+
 			}
 		} else { // select dialect
-			error();
+//			error();
 		}
 	}
 
 //	INSERT INTO user_notes (id, user_id, note, created) VALUES (1, 1, "Note 1", NOW());
 	void parseFuncCall() {
-//		expect(TokenClass.IDENT);
 		expect(TokenClass.LPAR);
 		parseArgList();
 		expect(TokenClass.RPAR);
 	}
 
 	void parseArgList() {
-		if (accept(TokenClass.IDENT)) {
+		if (accept(TokenClass.IDENT) || accept(TokenClass.NUMBER) || accept(TokenClass.STR)) {
 			nextToken();
 			parsArgRep();
 		}
@@ -89,12 +92,16 @@ public class Parser extends ToStr {
 	void parsArgRep() {
 		if (accept(TokenClass.COMMA)) {
 			nextToken();
-			expect(TokenClass.IDENT);
-			parsArgRep();
+			if (accept(TokenClass.IDENT) || accept(TokenClass.NUMBER) || accept(TokenClass.STR)
+					|| accept(TokenClass.KEYWORD)) {
+				nextToken();
+				parsArgRep();
+			} else
+				error();
 		}
 	}
 
-//	SELECT id, name, address FROM users WHERE is_customer IS NOT NULL ORDER BY created;
+//	DELETE FROM database2.logs WHERE id < 1000;
 	void parseAssign() {
 		expect(TokenClass.IDENT);
 		if (accept(TokenClass.LT)) {
@@ -133,12 +140,12 @@ public class Parser extends ToStr {
 
 	Expr parseTerm() {
 		Expr lhs = parseFactor();
-		if (accept(TokenClass.MULT) || accept(TokenClass.DIV)) {
+		if (accept(TokenClass.PLUS) || accept(TokenClass.MINUS)) {
 			Op op;
-			if (token.tokenClass == TokenClass.MULT) {
-				op = Op.MUL;
+			if (token.tokenClass == TokenClass.PLUS) {
+				op = Op.ADD;
 			} else {
-				op = Op.DIV;
+				op = Op.SUB;
 			}
 			nextToken();
 			return new BinOp(op, lhs, parseTerm());

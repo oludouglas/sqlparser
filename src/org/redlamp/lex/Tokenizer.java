@@ -30,6 +30,10 @@ public class Tokenizer {
 		keywords.put("null", TokenClass.KEYWORD);
 		keywords.put("values", TokenClass.KEYWORD);
 		keywords.put("delete", TokenClass.KEYWORD);
+
+		keywords.put("order", TokenClass.KEYWORD);
+		keywords.put("by", TokenClass.KEYWORD);
+
 		keywords.put("now()", TokenClass.KEYWORD);
 		keywords.put("is", TokenClass.KEYWORD);
 	}
@@ -72,12 +76,24 @@ public class Tokenizer {
 			return letterToken;
 
 		// number
+		letterToken = identifyNumber(c);
+		if (letterToken != null)
+			return letterToken;
+
+		return null;
+	}
+
+	private Token identifyNumber(char c) {
 		if (Character.isDigit(c)) {
 			StringBuilder builder = new StringBuilder();
 			builder.append(c);
+			if (scanner.peek() == ',') // used for arg parsing
+				return new Token(TokenClass.NUMBER, builder.toString());
 			c = scanner.next();
 			while (Character.isDigit(c)) {
 				builder.append(c);
+				if (scanner.peek() == ',' || scanner.peek() == ';') // used for arg parsing
+					break;
 				c = scanner.next();
 			}
 			return new Token(TokenClass.NUMBER, builder.toString());
@@ -105,15 +121,21 @@ public class Tokenizer {
 				if (scanner.peek() == ';')
 					break;
 
+				if (scanner.peek() == ',')
+					break;
+
 				c = scanner.next();
 			}
 
-			if (keywords.containsKey(builder.toString().toLowerCase()))
-				return new Token(TokenClass.KEYWORD, builder.toString());
-			if ((builder.toString().startsWith("\"") || builder.toString().startsWith("\'")))
-				return new Token(TokenClass.STR, builder.toString());
+			String stringLiteral = builder.toString();
 
-			return new Token(TokenClass.IDENT, builder.toString());
+			if (keywords.containsKey(stringLiteral.toLowerCase()))
+				return new Token(TokenClass.KEYWORD, stringLiteral);
+
+			if ((stringLiteral.startsWith("\"") || stringLiteral.startsWith("\'")))
+				return new Token(TokenClass.STR, stringLiteral);
+
+			return new Token(TokenClass.IDENT, stringLiteral);
 		}
 		return null;
 	}

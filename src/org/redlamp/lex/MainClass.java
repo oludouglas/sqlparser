@@ -4,7 +4,8 @@ public class MainClass {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-//		Tokenizer tokenizer = new Tokenizer("USE database1;");
+//		Tokenizer tokenizer = new Tokenizer(
+//				"SELECT id, name, address FROM users WHERE is_customer IS NOT NULL ORDER BY created;");
 //		Token next;
 //		while ((next = tokenizer.next()) != null)
 //			System.out.println(next);
@@ -13,7 +14,8 @@ public class MainClass {
 //		System.out.println(tokenizer.peek());
 //		System.out.println(tokenizer.next());
 
-		Parser parser = new Parser("USE database1;");
+		Parser parser = new Parser(
+				"SELECT id, name, address FROM users WHERE is_customer IS NOT NULL ORDER BY created;");
 		parser.parse();
 
 	}
