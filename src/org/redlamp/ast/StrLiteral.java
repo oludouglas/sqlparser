@@ -1,8 +1,6 @@
-package org.redlamp.expr;
+package org.redlamp.ast;
 
-import org.redlamp.ast.ASTVisitor;
 import org.redlamp.ast.BaseType;
-import org.redlamp.ast.Expr;
 
 public class StrLiteral extends Expr {
 

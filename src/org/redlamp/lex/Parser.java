@@ -1,10 +1,19 @@
 package org.redlamp.lex;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.redlamp.ast.BaseLiteral;
 import org.redlamp.ast.Expr;
-import org.redlamp.expr.IntLiteral;
-import org.redlamp.expr.StrLiteral;
+import org.redlamp.ast.Func;
+import org.redlamp.ast.Identifier;
+import org.redlamp.ast.IntLiteral;
+import org.redlamp.ast.OrderByExpr;
+import org.redlamp.ast.Select;
+import org.redlamp.ast.StrLiteral;
+import org.redlamp.ast.Table;
+import org.redlamp.ast.Use;
 import org.redlamp.lex.Token.TokenClass;
 
 public class Parser {
@@ -23,14 +32,15 @@ public class Parser {
 
 	public void parse() {
 		while (accept(TokenClass.KEYWORD)) {
-			parseStatement();
+			parseStatements();
 		}
 		System.out.println("OK");
 	}
 
-//	[Insert { table_name: ObjectName(["user_notes"]), columns: ["id", "user_id", "note", "created"], source: Query { ctes: [], body: Values(Values([[Value(Number("1")), Value(Number("1")), Identifier("\"Note 1\""), Function(Function { name: ObjectName(["NOW"]), args: [], over: None, distinct: false })]])), order_by: [], limit: None, offset: None, fetch: None } }]
+	void parseStatements() {
+		parseUseStmt();
+		parseSelectStmt();
 
-	void parseStatement() {
 		expect(TokenClass.KEYWORD); // insert | delete | use |select
 		if (accept(TokenClass.KEYWORD)) { // from | into
 			parseKeyWord();
@@ -67,54 +77,107 @@ public class Parser {
 		expect(TokenClass.END);
 	}
 
-	void parseKeyWord() {
-		if (accept(TokenClass.KEYWORD)) {
-			expect(TokenClass.KEYWORD);
-			parseKeyWord();
+	Select parseSelectStmt() {
+		expect(TokenClass.KEYWORD);
+		List<Identifier> identifiers = parsArgRep();
+		expect(TokenClass.KEYWORD); // from
+		List<Table> relations = parseTables();
+		List<Expr> conditions = parseConditions();
+		OrderByExpr orderByExprs = parseOrderBy();
+		return new Select(identifiers, relations, conditions, orderByExprs);
+	}
+
+	private OrderByExpr parseOrderBy() {
+		// TODO Auto-generated method stub
+
+		return null;
+	}
+
+	private List<Expr> parseConditions() {
+		List<Expr> conditions = null;
+
+		if (accept(TokenClass.KEYWORD)) { // if where clause is supported
+			expect(TokenClass.KEYWORD); // where
+			conditions = parseAssign();
 		}
+
+		return conditions;
 	}
 
-	void parseFuncCall() {
+	private List<Table> relations = new ArrayList<Table>();;
+
+	private List<Table> parseTables() {
+		expect(TokenClass.IDENT); // MUST HAVE
+		relations.add(new Table(token.data));
+		if (accept(TokenClass.COMMA))
+			parseTables();
+		return relations;
+	}
+
+	Use parseUseStmt() {
+		Use use = new Use();
+		expect(TokenClass.KEYWORD);
+		use.command = token.data;
+		if (accept(TokenClass.IDENT)) {
+			expect(TokenClass.IDENT);
+			use.database = token.data;
+		}
+		expect(TokenClass.END);
+		return use;
+	}
+
+	Func parseFuncCall() {
 		expect(TokenClass.LPAR);
-		parseArgList();
+		List<Identifier> parseArgList = parseArgList();
 		expect(TokenClass.RPAR);
+		return new Func("", parseArgList);
 	}
 
-	void parseArgList() {
+	List<Identifier> parseArgList() {
+		return parsArgRep();
+	}
+
+	List<Identifier> parsArgRep() {
+		List<Identifier> identifiers = new ArrayList<Identifier>();
 		if (accept(TokenClass.IDENT) || accept(TokenClass.NUMBER) || accept(TokenClass.STR)) {
 			nextToken();
-			parsArgRep();
+			identifiers.add(new Identifier(token.data));
 		}
-	}
-
-	void parsArgRep() {
 		if (accept(TokenClass.COMMA)) {
 			nextToken();
 			if (accept(TokenClass.IDENT) || accept(TokenClass.NUMBER) || accept(TokenClass.STR)
 					|| accept(TokenClass.KEYWORD)) {
 				nextToken();
+				identifiers.add(new Identifier(token.data));
 				parsArgRep();
 			} else
 				error();
 		}
+		return identifiers;
 	}
 
-	void parseAssign() {
+	List<Expr> conditions = new ArrayList<Expr>();
+
+	List<Expr> parseAssign() {
+
 		expect(TokenClass.IDENT);
 		if (accept(TokenClass.LT)) {
 			expect(TokenClass.LT);
-			parseExpr();
-		} else if (accept(TokenClass.LT)) {
-			expect(TokenClass.LT);
-			parseExpr();
-		} else if (accept(TokenClass.KEYWORD)) {
-			expect(TokenClass.KEYWORD); // is
-			expect(TokenClass.KEYWORD); // not
-			expect(TokenClass.KEYWORD); // null
-			expect(TokenClass.KEYWORD); // order
-			expect(TokenClass.KEYWORD); // by
-			expect(TokenClass.IDENT); // created
+			conditions.add(parseExpr());
 		}
+		if (accept(TokenClass.KEYWORD)) {
+			expect(TokenClass.KEYWORD);
+			conditions.add(parseExpr());
+		}
+//		if (accept(TokenClass.KEYWORD)) {
+//			expect(TokenClass.KEYWORD); // is
+//			expect(TokenClass.KEYWORD); // not
+//			expect(TokenClass.KEYWORD); // null
+//			expect(TokenClass.KEYWORD); // order
+//			expect(TokenClass.KEYWORD); // by
+//			expect(TokenClass.IDENT); // created
+//		}
+		return conditions;
 	}
 
 	Expr parseExpr() {
@@ -134,8 +197,15 @@ public class Parser {
 			return parseNumber();
 		} else if (accept(TokenClass.STR)) {
 			return parseString();
+		} else if (accept(TokenClass.KEYWORD)) {
+			return parseKeyWord();
 		}
 		return parseIdent();
+	}
+
+	Expr parseKeyWord() {
+		Token n = expect(TokenClass.KEYWORD);
+		return new BaseLiteral(n.data);
 	}
 
 	Expr parseNumber() {
@@ -154,8 +224,9 @@ public class Parser {
 		return new StrLiteral(n.data);
 	}
 
-	void nextToken() {
-		token = tokenizer.next();
+	Token nextToken() {
+		this.token = tokenizer.next();
+		return token;
 	}
 
 	boolean accept(TokenClass ident) {

@@ -20,7 +20,7 @@ public class BinOp extends Expr {
 	@Override
 	public <T> T accept(ASTVisitor<T> v) {
 		// TODO Auto-generated method stub
-		return v.visitBaseType(BaseType.GT);
+		return v.visitBaseType(BaseType.OPERATOR);
 	}
 
 }

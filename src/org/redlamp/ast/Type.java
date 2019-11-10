@@ -1,3 +1,4 @@
+
 package org.redlamp.ast;
 
 public interface Type extends ASTNode {
