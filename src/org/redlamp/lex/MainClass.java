@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import org.redlamp.ast.Insert;
+import org.redlamp.ast.Select;
 import org.redlamp.expr.ASTPrinter;
 
 public class MainClass {
@@ -16,8 +16,13 @@ public class MainClass {
 
 	public static void main(String[] args) throws IOException {
 
-		Parser parser = new Parser(insert);
-		Insert parseUseStmt = parser.parseInsertStmt();
+//		Tokenizer tokenizer = new Tokenizer(insert);
+//		Token token;
+//		while ((token = tokenizer.next()) != null)
+//			System.out.println(token);
+
+		Parser parser = new Parser(select);
+		Select parseUseStmt = parser.parseSelectStmt();
 
 		PrintWriter writer;
 		try (StringWriter sw = new StringWriter();) {

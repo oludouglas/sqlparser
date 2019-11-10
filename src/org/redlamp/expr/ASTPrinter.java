@@ -16,7 +16,7 @@ import org.redlamp.ast.Select;
 import org.redlamp.ast.Statement;
 import org.redlamp.ast.Table;
 import org.redlamp.ast.Use;
-import org.redlamp.lex.Token.TokenClass;
+import org.redlamp.ast.WhereClause;
 
 public class ASTPrinter implements ASTVisitor<Void> {
 
@@ -91,20 +91,18 @@ public class ASTPrinter implements ASTVisitor<Void> {
 
 		for (Identifier std : select.identifiers) {
 			writer.print(delimiter);
-			delimiter = ",";
+			delimiter = ", ";
 			std.accept(this);
 		}
 		for (Table vd : select.relations) {
 			writer.print(delimiter);
-			delimiter = ",";
+			delimiter = ", ";
 			vd.accept(this);
 		}
-		for (Expr fd : select.conditions) {
-			writer.print(delimiter);
-			delimiter = ",";
-			fd.accept(this);
-		}
-		select.orderByExprs.accept(this);
+		writer.print(delimiter);
+		select.conditions.accept(this);
+
+//		select.orderByExprs.accept(this);
 
 		writer.print("]");
 		writer.flush();
@@ -141,19 +139,19 @@ public class ASTPrinter implements ASTVisitor<Void> {
 	public Void visitInsert(Insert in) {
 
 		writer.print("Insert: [");
-		writer.print("relation: (");
+		writer.print("relation: {");
 		in.relation.accept(this);
-		writer.print(")");
+		writer.print("}");
 
 		writer.print(", ");
 
-		writer.print("columns: [");
+		writer.print("{columns: [");
 		in.columns.accept(this);
-		writer.print("]");
+		writer.print("]}");
 
-		writer.print(", values: [");
+		writer.print(", {values: [");
 		in.values.accept(this);
-		writer.print("]");
+		writer.print("]}");
 
 		writer.print("]");
 		writer.flush();
@@ -163,25 +161,25 @@ public class ASTPrinter implements ASTVisitor<Void> {
 
 	@Override
 	public Void visitIdentifier(Identifier id) {
-		
+
 		writer.print("Identifier(");
-		if (id.identifierType == TokenClass.STR)
-			writer.print("\"");
 		writer.print(id.identifierName);
-		if (id.identifierType == TokenClass.STR)
-			writer.print("\"");
+
 		writer.print(")");
 		writer.flush();
-		
+
 		return null;
 	}
 
 	@Override
 	public Void visitUse(Use use) {
-		writer.print("UseExpr(");
+		writer.print("[");
+
 		writer.print(use.command);
-		writer.print(":" + use.database);
-		writer.print(")");
+		writer.print(":{");
+		writer.print("database: " + use.database);
+		writer.print("}");
+		writer.print("]");
 		writer.flush();
 		return null;
 	}
@@ -192,18 +190,13 @@ public class ASTPrinter implements ASTVisitor<Void> {
 	@Override
 	public Void visitFunc(Func func) {
 
-		func.expr.accept(this);
-		writer.print(", ");
-
 		String delimiter = "";
-
 		for (Identifier fd : func.args) {
 			writer.print(delimiter);
 			delimiter = ", ";
 			fd.accept(this);
 		}
 
-		writer.print(")");
 		writer.print(")");
 		writer.flush();
 
@@ -212,10 +205,21 @@ public class ASTPrinter implements ASTVisitor<Void> {
 
 	@Override
 	public Void visitExpr(Expr expr) {
-
 		writer.print("Expression: [");
-
 		expr.accept(this);
+		writer.print("]");
+		writer.flush();
+		return null;
+	}
+
+	@Override
+	public Void visitWhereClause(WhereClause func) {
+		writer.print("Where: [");
+
+		for (Expr fd : func.expr) {
+			writer.print(" ");
+			fd.accept(this);
+		}
 
 		writer.print("]");
 		writer.flush();

@@ -1,6 +1,6 @@
 package org.redlamp.ast;
 
-public class IsNotNull implements ASTNode {
+public class IsNotNull extends Expr {
 
 	public String Identifier;
 

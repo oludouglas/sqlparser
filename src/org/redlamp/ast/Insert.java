@@ -2,13 +2,13 @@ package org.redlamp.ast;
 
 public class Insert implements ASTNode {
 
-	public Expr relation;
+	public Table relation;
 	public Func columns;
 	public Func values;
 
-	public Insert(Func columns, Func values) {
+	public Insert(Table relation, Func columns, Func values) {
 		super();
-		this.relation = columns.expr;
+		this.relation = relation;
 		this.columns = columns;
 		this.values = values;
 	}

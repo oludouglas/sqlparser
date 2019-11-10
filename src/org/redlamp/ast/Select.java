@@ -6,10 +6,11 @@ public class Select implements ASTNode {
 
 	public final List<Identifier> identifiers;
 	public List<Table> relations;
-	public List<Expr> conditions;
+	public WhereClause conditions;
+
 	public OrderByExpr orderByExprs;
 
-	public Select(List<Identifier> identifiers, List<Table> relations, List<Expr> conditions,
+	public Select(List<Identifier> identifiers, List<Table> relations, WhereClause conditions,
 			OrderByExpr orderByExprs) {
 		super();
 		this.identifiers = identifiers;

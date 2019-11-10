@@ -25,5 +25,7 @@ public interface ASTVisitor<T> {
 	public T visitFunc(Func func);
 
 	public T visitExpr(Expr func);
+	
+	public T visitWhereClause(WhereClause func);
 
 }

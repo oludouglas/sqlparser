@@ -66,8 +66,6 @@ public class Tokenizer {
 		TokenClass ident = identifyTokenClass(c);
 		if (ident != TokenClass.NONE)
 			return new Token(ident, Character.toString(c));
-		else if (ident == TokenClass.END)
-			return null;
 
 		// identifier
 		Token token = identifyLetter(c, c == '\'' || c == '\"');
@@ -145,8 +143,7 @@ public class Tokenizer {
 			return TokenClass.RPAR;
 		case '(':
 			return TokenClass.LPAR;
-		case ';':
-			return TokenClass.END;
+
 		case '_':
 			return TokenClass.UNDERSCORE;
 		case ',':
@@ -155,6 +152,7 @@ public class Tokenizer {
 			return TokenClass.GT;
 		case '<':
 			return TokenClass.LT;
+		case ';':
 		case ' ':
 		case '\t':
 		default:

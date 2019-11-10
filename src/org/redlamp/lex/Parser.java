@@ -15,6 +15,7 @@ import org.redlamp.ast.Select;
 import org.redlamp.ast.StrLiteral;
 import org.redlamp.ast.Table;
 import org.redlamp.ast.Use;
+import org.redlamp.ast.WhereClause;
 import org.redlamp.lex.Token.TokenClass;
 
 public class Parser {
@@ -66,7 +67,7 @@ public class Parser {
 					parseAssign();
 				}
 			} else if (lookAhead(1) == TokenClass.COMMA) { // select dialect
-				parsArgRep();
+				parseArgRep();
 				expect(TokenClass.KEYWORD); // from
 				expect(TokenClass.IDENT); // table_nm
 				if (accept(TokenClass.KEYWORD)) { // if where clause is supported
@@ -75,7 +76,6 @@ public class Parser {
 				}
 			}
 		}
-		expect(TokenClass.END);
 	}
 
 	Use parseUseStmt() {
@@ -86,28 +86,49 @@ public class Parser {
 			expect(TokenClass.IDENT);
 			use.database = token.data;
 		}
-		expect(TokenClass.END);
 		return use;
 	}
 
 	Insert parseInsertStmt() {
 		expect(TokenClass.KEYWORD); // insert
 		expect(TokenClass.KEYWORD); // into
-		Expr tableName = parseIdent();
-		Func tableColumns = parseFuncCall();
-		tableColumns.expr = tableName;
-		Expr valuesName = parseKeyWord();
-		Func values = parseFuncCall(); // values list
-		values.expr = valuesName;
-		return new Insert(tableColumns, values);
+
+		Table parseTable = parseTable();
+		Func columns = parseVarFuncCall();
+		columns.expr = new StrLiteral(parseTable.relation);
+
+		Expr value = parseKeyWord();
+		Func values = parseKeyFuncCall(); // values list
+		values.expr = value;
+
+		return new Insert(parseTable, columns, values);
+	}
+
+	Func parseVarFuncCall() {
+		expect(TokenClass.LPAR);
+		List<Identifier> parseArgList = parseArgList();
+		System.out.println("parseVarFuncCall");
+
+		for (Identifier identifier : parseArgList)
+			System.out.println(identifier.identifierName + ": " + identifier.identifierType);
+		expect(TokenClass.RPAR);
+		return new Func(null, parseArgList);
+	}
+
+	Func parseKeyFuncCall() {
+		expect(TokenClass.LPAR);
+		List<Identifier> parseArgList = parseArgList();
+		expect(TokenClass.RPAR);
+		return new Func(null, parseArgList);
 	}
 
 	Select parseSelectStmt() {
 		expect(TokenClass.KEYWORD);
-		List<Identifier> identifiers = parsArgRep();
+		List<Identifier> identifiers = parseSelectArgList();
 		expect(TokenClass.KEYWORD); // from
 		List<Table> relations = parseTables();
-		List<Expr> conditions = parseConditions();
+		WhereClause conditions = parseConditions();
+
 		OrderByExpr orderByExprs = parseOrderBy();
 		return new Select(identifiers, relations, conditions, orderByExprs);
 	}
@@ -118,11 +139,33 @@ public class Parser {
 		return null;
 	}
 
-	private List<Expr> parseConditions() {
-		List<Expr> conditions = null;
-		if (accept(TokenClass.KEYWORD)) { // if where clause is supported
-			expect(TokenClass.KEYWORD); // where
-			conditions = parseAssign();
+	private WhereClause parseConditions() {
+		conditions.clear();
+		List<Expr> conditionList = new ArrayList<Expr>();
+		while (accept(TokenClass.KEYWORD))
+			parseAssign();
+
+		conditionList.addAll(conditions);
+		conditions.clear();
+		return new WhereClause(conditionList);
+	}
+
+	void parseKeywordAssign() {
+		if (accept(TokenClass.KEYWORD))
+			identifiers.add(parseKeyIdentifier());
+	}
+
+	List<Expr> parseAssign() {
+		if (accept(TokenClass.IDENT))
+			expect(TokenClass.IDENT);
+
+		if (accept(TokenClass.LT)) {
+			expect(TokenClass.LT);
+			conditions.add(parseExpr());
+		}
+		if (accept(TokenClass.KEYWORD)) {
+			expect(TokenClass.KEYWORD);
+			conditions.add(parseExpr());
 		}
 		return conditions;
 	}
@@ -134,7 +177,10 @@ public class Parser {
 		relations.add(new Table(token.data));
 		if (accept(TokenClass.COMMA))
 			parseTables();
-		return relations;
+
+		List<Table> tables = new ArrayList<Table>(relations);
+		relations.clear();
+		return tables;
 	}
 
 	Table parseTable() {
@@ -144,51 +190,51 @@ public class Parser {
 
 	Func parseFuncCall() {
 		expect(TokenClass.LPAR);
+		Identifier parseIdent = parseIdentifier();
 		List<Identifier> parseArgList = parseArgList();
+		parseArgList.add(0, parseIdent);
+
+		for (Identifier identifier : parseArgList)
+			System.out.println(identifier.identifierName + ": " + identifier.identifierType);
 		expect(TokenClass.RPAR);
 		return new Func(null, parseArgList);
 	}
 
 	List<Identifier> parseArgList() {
-		return parsArgRep();
+		identifiers.clear();
+		while (!accept(TokenClass.RPAR)) {
+			parseArgRep();
+		}
+		List<Identifier> args = new ArrayList<Identifier>(identifiers);
+		identifiers.clear();
+		return args;
 	}
 
-	List<Identifier> parsArgRep() {
-		List<Identifier> identifiers = new ArrayList<Identifier>();
-		if (accept(TokenClass.RPAR))
-			return identifiers;
+	List<Identifier> parseSelectArgList() {
+		identifiers.clear();
+		while (!accept(TokenClass.KEYWORD)) {
+			parseArgRep();
+		}
+		List<Identifier> args = new ArrayList<Identifier>(identifiers);
+		identifiers.clear();
+		return args;
+	}
 
-		if (accept(TokenClass.IDENT) || accept(TokenClass.NUMBER) || accept(TokenClass.STR)) {
+	List<Identifier> identifiers = new ArrayList<Identifier>();
+
+	List<Identifier> parseArgRep() {
+		if (accept(TokenClass.IDENT) || accept(TokenClass.NUMBER) || accept(TokenClass.STR)
+				|| accept(TokenClass.KEYWORD)) {
 			nextToken();
 			identifiers.add(new Identifier(token));
-		}
-		if (accept(TokenClass.COMMA)) {
-			nextToken();
-			if (accept(TokenClass.IDENT) || accept(TokenClass.NUMBER) || accept(TokenClass.STR)
-					|| accept(TokenClass.KEYWORD)) {
-				nextToken();
-				identifiers.add(new Identifier(token));
-				parsArgRep();
-			} else
-				error();
+			if (accept(TokenClass.COMMA)) {
+				nextToken();// skip commas
+			}
 		}
 		return identifiers;
 	}
 
 	List<Expr> conditions = new ArrayList<Expr>();
-
-	List<Expr> parseAssign() {
-		expect(TokenClass.IDENT);
-		if (accept(TokenClass.LT)) {
-			expect(TokenClass.LT);
-			conditions.add(parseExpr());
-		}
-		if (accept(TokenClass.KEYWORD)) {
-			expect(TokenClass.KEYWORD);
-			conditions.add(parseExpr());
-		}
-		return conditions;
-	}
 
 	Expr parseExpr() {
 		return parseTerm();
@@ -232,6 +278,16 @@ public class Parser {
 	Expr parseIdent() {
 		Token n = expect(TokenClass.IDENT);
 		return new StrLiteral(n.data);
+	}
+
+	Identifier parseIdentifier() {
+		Token n = expect(TokenClass.IDENT);
+		return new Identifier(n);
+	}
+
+	Identifier parseKeyIdentifier() {
+		Token n = expect(TokenClass.KEYWORD);
+		return new Identifier(n);
 	}
 
 	Token nextToken() {

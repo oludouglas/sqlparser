@@ -40,7 +40,6 @@ public class Scanner {
 				} else {
 					column++;
 				}
-
 			} else
 				peek = ';';
 		} catch (IOException e) {
