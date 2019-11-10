@@ -360,6 +360,8 @@ public class Parser {
 
 	Token expect(TokenClass ident) {
 		nextToken();
+		if (token == null)
+			nextToken();
 		if (token.tokenClass != ident) {
 			errorBuffer.setLength(0);
 			errorBuffer.append("Invalid token type expected. Expecting ").append(ident).append(" but got ")

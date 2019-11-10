@@ -66,12 +66,15 @@ public class ASTPrinter implements ASTVisitor<Void> {
 
 	@Override
 	public Void visitStatement(Statement stmt) {
-		writer.print("Statements: [");
+		writer.print("Statements: {\n");
 		stmt.use.accept(this);
+		writer.print(",\n");
 		stmt.select.accept(this);
+		writer.print(",\n");
 		stmt.insert.accept(this);
+		writer.print(",\n");
 		stmt.delete.accept(this);
-		writer.print("]");
+		writer.print("\n}");
 		writer.flush();
 		return null;
 	}
