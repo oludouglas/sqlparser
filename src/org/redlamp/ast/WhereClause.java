@@ -2,7 +2,7 @@ package org.redlamp.ast;
 
 import java.util.List;
 
-public class WhereClause implements ASTNode {
+public class WhereClause implements AstNode {
 
 	public List<Identifier> expr;
 
@@ -12,7 +12,7 @@ public class WhereClause implements ASTNode {
 	}
 
 	@Override
-	public <T> T accept(ASTVisitor<T> v) {
+	public <T> T accept(AstVisitor<T> v) {
 		// TODO Auto-generated method stub
 		return v.visitWhereClause(this);
 	}

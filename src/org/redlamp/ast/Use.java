@@ -1,6 +1,6 @@
 package org.redlamp.ast;
 
-public class Use implements ASTNode {
+public class Use implements AstNode {
 
 	public String command;
 	public String database;
@@ -17,7 +17,7 @@ public class Use implements ASTNode {
 	}
 
 	@Override
-	public <T> T accept(ASTVisitor<T> v) {
+	public <T> T accept(AstVisitor<T> v) {
 		// TODO Auto-generated method stub
 		return v.visitUse(this);
 	}

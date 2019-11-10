@@ -3,7 +3,7 @@ package org.redlamp.expr;
 import java.io.PrintWriter;
 import java.util.List;
 
-import org.redlamp.ast.ASTVisitor;
+import org.redlamp.ast.AstVisitor;
 import org.redlamp.ast.BaseType;
 import org.redlamp.ast.Delete;
 import org.redlamp.ast.Expr;
@@ -18,11 +18,11 @@ import org.redlamp.ast.Table;
 import org.redlamp.ast.Use;
 import org.redlamp.ast.WhereClause;
 
-public class ASTPrinter implements ASTVisitor<Void> {
+public class AstDump implements AstVisitor<Void> {
 
 	private PrintWriter writer;
 
-	public ASTPrinter(PrintWriter writer) {
+	public AstDump(PrintWriter writer) {
 		this.writer = writer;
 	}
 

@@ -11,7 +11,7 @@ public class StrLiteral extends Expr {
 	}
 
 	@Override
-	public <T> T accept(ASTVisitor<T> v) {
+	public <T> T accept(AstVisitor<T> v) {
 		return v.visitBaseType(BaseType.VARCHAR);
 	}
 

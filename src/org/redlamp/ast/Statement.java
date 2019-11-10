@@ -1,6 +1,6 @@
 package org.redlamp.ast;
 
-public class Statement implements ASTNode {
+public class Statement implements AstNode {
 
 	public Use use;
 	public Select select;
@@ -15,7 +15,7 @@ public class Statement implements ASTNode {
 		this.delete = delete;
 	}
 
-	public <T> T accept(ASTVisitor<T> v) {
+	public <T> T accept(AstVisitor<T> v) {
 		return v.visitStatement(this);
 	}
 }

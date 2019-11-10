@@ -38,7 +38,7 @@ public class Parser {
 		parseStatements();
 	}
 
-	Statement parseStatements() {
+	public Statement parseStatements() {
 		Use use = parseUseStmt();
 		Select select = parseSelectStmt();
 		Insert insert = parseInsertStmt();
@@ -46,7 +46,7 @@ public class Parser {
 		return new Statement(use, select, insert, delete);
 	}
 
-	void autoParse() {
+	public void autoParse() {
 		while (accept(TokenClass.KEYWORD)) {
 			expect(TokenClass.KEYWORD); // insert | delete | use |select
 			if (accept(TokenClass.KEYWORD)) { // from | into
@@ -84,7 +84,7 @@ public class Parser {
 		}
 	}
 
-	Use parseUseStmt() {
+	public Use parseUseStmt() {
 		Use use = new Use();
 		expect(TokenClass.KEYWORD);
 		use.command = token.data;
@@ -95,7 +95,7 @@ public class Parser {
 		return use;
 	}
 
-	Insert parseInsertStmt() {
+	public Insert parseInsertStmt() {
 		expect(TokenClass.KEYWORD); // insert
 		expect(TokenClass.KEYWORD); // into
 
@@ -124,7 +124,7 @@ public class Parser {
 		return new Func(null, parseArgList);
 	}
 
-	Select parseSelectStmt() {
+	public Select parseSelectStmt() {
 		expect(TokenClass.KEYWORD);
 		List<Identifier> identifiers = parseSelectArgList();
 		expect(TokenClass.KEYWORD); // from
@@ -134,7 +134,7 @@ public class Parser {
 		return new Select(identifiers, relations, conditions, orderByExprs);
 	}
 
-	Delete parseDeleteStmt() {
+	public Delete parseDeleteStmt() {
 		expect(TokenClass.KEYWORD);
 		List<Identifier> columns = parseSelectArgList();
 		expect(TokenClass.KEYWORD); // from
@@ -158,7 +158,6 @@ public class Parser {
 		return new OrderByExpr(conditionList, asc);
 	}
 
-//	DELETE FROM database2.logs WHERE id < 1000;
 	private WhereClause parseWhereExpr() {
 		List<Identifier> conditionList = new ArrayList<Identifier>();
 		if (accept(TokenClass.KEYWORD)) {
