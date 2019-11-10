@@ -10,7 +10,7 @@ public class IsNotNull extends Expr {
 	}
 
 	@Override
-	public <T> T accept(ASTVisitor<T> v) {
+	public <T> T accept(AstVisitor<T> v) {
 		// TODO Auto-generated method stub
 		return v.visitIsNotNull(this);
 	}

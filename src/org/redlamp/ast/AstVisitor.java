@@ -1,6 +1,6 @@
 package org.redlamp.ast;
 
-public interface ASTVisitor<T> {
+public interface AstVisitor<T> {
 
 	public T visitTable(Table bt);
 

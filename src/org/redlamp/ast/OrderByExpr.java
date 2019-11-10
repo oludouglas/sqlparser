@@ -2,7 +2,7 @@ package org.redlamp.ast;
 
 import java.util.List;
 
-public class OrderByExpr implements ASTNode {
+public class OrderByExpr implements AstNode {
 
 	public List<Identifier> expr;
 	public boolean desc;
@@ -14,7 +14,7 @@ public class OrderByExpr implements ASTNode {
 	}
 
 	@Override
-	public <T> T accept(ASTVisitor<T> v) {
+	public <T> T accept(AstVisitor<T> v) {
 		// TODO Auto-generated method stub
 		return v.visitOrderByExpr(this);
 	}

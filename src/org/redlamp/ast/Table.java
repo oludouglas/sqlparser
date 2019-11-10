@@ -1,6 +1,6 @@
 package org.redlamp.ast;
 
-public class Table implements ASTNode {
+public class Table implements AstNode {
 
 	public final String relation;
 
@@ -10,7 +10,7 @@ public class Table implements ASTNode {
 	}
 
 	@Override
-	public <T> T accept(ASTVisitor<T> v) {
+	public <T> T accept(AstVisitor<T> v) {
 		// TODO Auto-generated method stub
 		return v.visitTable(this);
 	}

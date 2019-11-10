@@ -11,7 +11,7 @@ public class IntLiteral extends Expr {
 	}
 
 	@Override
-	public <T> T accept(ASTVisitor<T> v) {
+	public <T> T accept(AstVisitor<T> v) {
 		// TODO Auto-generated method stub
 		return v.visitBaseType(BaseType.INT);
 	}

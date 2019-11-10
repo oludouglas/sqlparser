@@ -1,8 +1,5 @@
-
 package org.redlamp.ast;
 
-public interface Type extends AstNode {
-
+public interface AstNode {
 	public <T> T accept(AstVisitor<T> v);
-
 }

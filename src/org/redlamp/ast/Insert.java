@@ -1,6 +1,6 @@
 package org.redlamp.ast;
 
-public class Insert implements ASTNode {
+public class Insert implements AstNode {
 
 	public Table relation;
 	public Func columns;
@@ -14,7 +14,7 @@ public class Insert implements ASTNode {
 	}
 
 	@Override
-	public <T> T accept(ASTVisitor<T> v) {
+	public <T> T accept(AstVisitor<T> v) {
 		// TODO Auto-generated method stub
 		return v.visitInsert(this);
 	}

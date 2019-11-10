@@ -3,7 +3,7 @@ package org.redlamp.ast;
 import org.redlamp.lex.Token;
 import org.redlamp.lex.Token.TokenClass;
 
-public class Identifier implements ASTNode {
+public class Identifier implements AstNode {
 
 	public TokenClass identifierType;
 	public final String identifierName;
@@ -17,7 +17,7 @@ public class Identifier implements ASTNode {
 		this.identifierType = token.tokenClass;
 	}
 
-	public <T> T accept(ASTVisitor<T> v) {
+	public <T> T accept(AstVisitor<T> v) {
 		return v.visitIdentifier(this);
 	}
 }

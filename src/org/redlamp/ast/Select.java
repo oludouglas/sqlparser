@@ -2,7 +2,7 @@ package org.redlamp.ast;
 
 import java.util.List;
 
-public class Select implements ASTNode {
+public class Select implements AstNode {
 
 	public final List<Identifier> identifiers;
 	public List<Table> relations;
@@ -20,7 +20,7 @@ public class Select implements ASTNode {
 	}
 
 	@Override
-	public <T> T accept(ASTVisitor<T> v) {
+	public <T> T accept(AstVisitor<T> v) {
 		return v.visitSelect(this);
 	}
 

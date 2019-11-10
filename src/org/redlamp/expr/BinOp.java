@@ -1,6 +1,6 @@
 package org.redlamp.expr;
 
-import org.redlamp.ast.ASTVisitor;
+import org.redlamp.ast.AstVisitor;
 import org.redlamp.ast.BaseType;
 import org.redlamp.ast.Expr;
 
@@ -18,7 +18,7 @@ public class BinOp extends Expr {
 	}
 
 	@Override
-	public <T> T accept(ASTVisitor<T> v) {
+	public <T> T accept(AstVisitor<T> v) {
 		// TODO Auto-generated method stub
 		return v.visitBaseType(BaseType.OPERATOR);
 	}

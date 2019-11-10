@@ -54,7 +54,7 @@ public class Tokenizer {
 		return buildToken(next);
 	}
 
-	Token peek() {
+	public Token peek() {
 		peekedToken = next();
 		peeked = true;
 		return peekedToken;

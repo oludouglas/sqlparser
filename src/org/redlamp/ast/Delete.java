@@ -2,7 +2,7 @@ package org.redlamp.ast;
 
 import java.util.List;
 
-public class Delete implements ASTNode {
+public class Delete implements AstNode {
 
 	public List<Identifier> columns;
 	public Table table;
@@ -16,7 +16,7 @@ public class Delete implements ASTNode {
 	}
 
 	@Override
-	public <T> T accept(ASTVisitor<T> v) {
+	public <T> T accept(AstVisitor<T> v) {
 		// TODO Auto-generated method stub
 		return v.visitDelete(this);
 	}
