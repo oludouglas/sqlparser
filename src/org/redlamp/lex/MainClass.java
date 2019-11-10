@@ -38,13 +38,6 @@ public class MainClass {
 
 		try (FileInputStream fis = new FileInputStream(new File("simple-sql-parser-short/operations.sql"))) {
 
-			Tokenizer tokenizer = new Tokenizer(fis);
-			Token token;
-			while ((token = tokenizer.next()) != null) {
-				System.out.println(token);
-				System.out.println("============================================");
-			}
-
 			Parser parser = new Parser(fis);
 			Statement statement = parser.parseStatements();
 
