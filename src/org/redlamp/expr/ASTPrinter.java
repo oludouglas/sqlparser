@@ -47,15 +47,17 @@ public class ASTPrinter implements ASTVisitor<Void> {
 	@Override
 	public Void visitOrderByExpr(OrderByExpr ob) {
 
-		writer.print("order_by: [");
 		writer.print("OrderByExpr: [");
 
-		ob.expr.accept(this);
-		writer.print(",");
-		writer.print("asc: ");
-		writer.print(ob.asc);
+		for (Identifier std : ob.expr) {
+			writer.print(" ");
+			std.accept(this);
+		}
 
-		writer.print("]");
+		writer.print(",");
+		writer.print("desc: ");
+		writer.print(ob.desc);
+
 		writer.print("]");
 
 		writer.flush();
@@ -64,7 +66,7 @@ public class ASTPrinter implements ASTVisitor<Void> {
 
 	@Override
 	public Void visitStatement(Statement stmt) {
-		writer.print("Statement: [");
+		writer.print("Statements: [");
 		stmt.use.accept(this);
 		stmt.select.accept(this);
 		stmt.insert.accept(this);
@@ -89,20 +91,20 @@ public class ASTPrinter implements ASTVisitor<Void> {
 		writer.print("Select[");
 		String delimiter = "";
 
+		writer.print("identifiers: [");
 		for (Identifier std : select.identifiers) {
 			writer.print(delimiter);
 			delimiter = ", ";
 			std.accept(this);
 		}
+		writer.print("], relations: [");
 		for (Table vd : select.relations) {
-			writer.print(delimiter);
-			delimiter = ", ";
 			vd.accept(this);
 		}
-		writer.print(delimiter);
+		writer.print("], conditions: [");
 		select.conditions.accept(this);
-
-//		select.orderByExprs.accept(this);
+		writer.print("], ");
+		select.orderByExprs.accept(this);
 
 		writer.print("]");
 		writer.flush();
@@ -113,21 +115,19 @@ public class ASTPrinter implements ASTVisitor<Void> {
 	@Override
 	public Void visitDelete(Delete dl) {
 
-		writer.print("Delete: [");
+		writer.print("Delete[");
 		String delimiter = "";
 
-		for (String std : dl.columns) {
+		writer.print("identifiers: [");
+		for (Identifier std : dl.columns) {
 			writer.print(delimiter);
-			delimiter = ",";
-			writer.print(std);
+			delimiter = ", ";
+			std.accept(this);
 		}
+		writer.print("], relations: [");
 		dl.table.accept(this);
-
-		for (Expr fd : dl.conditions) {
-			writer.print(delimiter);
-			delimiter = ",";
-			fd.accept(this);
-		}
+		writer.print("], conditions: [");
+		dl.conditions.accept(this);
 
 		writer.print("]");
 		writer.flush();
@@ -216,7 +216,7 @@ public class ASTPrinter implements ASTVisitor<Void> {
 	public Void visitWhereClause(WhereClause func) {
 		writer.print("Where: [");
 
-		for (Expr fd : func.expr) {
+		for (Identifier fd : func.expr) {
 			writer.print(" ");
 			fd.accept(this);
 		}

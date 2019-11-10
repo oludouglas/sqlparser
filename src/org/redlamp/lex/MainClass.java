@@ -1,10 +1,12 @@
 package org.redlamp.lex;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import org.redlamp.ast.Select;
+import org.redlamp.ast.Statement;
 import org.redlamp.expr.ASTPrinter;
 
 public class MainClass {
@@ -16,41 +18,49 @@ public class MainClass {
 
 	public static void main(String[] args) throws IOException {
 
-//		Tokenizer tokenizer = new Tokenizer(insert);
+//		Tokenizer tokenizer = new Tokenizer(select);
 //		Token token;
 //		while ((token = tokenizer.next()) != null)
 //			System.out.println(token);
 
-		Parser parser = new Parser(select);
-		Select parseUseStmt = parser.parseSelectStmt();
-
-		PrintWriter writer;
-		try (StringWriter sw = new StringWriter();) {
-			writer = new PrintWriter(sw);
-			parseUseStmt.accept(new ASTPrinter(writer));
-			writer.flush();
-			System.out.print(sw.toString());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-//		try (FileInputStream fis = new FileInputStream(new File("simple-sql-parser-short/operations.sql"))) {
-//			Parser parser = new Parser(fis);
-//			Select parseUseStmt = parser.parseSelectStmt();
+//		Parser parser = new Parser(delete);
+//		Delete parseUseStmt = parser.parseStatements();
 //
-//			PrintWriter writer;
-//			StringWriter sw = new StringWriter();
-//			try {
-//				writer = new PrintWriter(sw);
-//				parseUseStmt.accept(new ASTPrinter(writer));
-//				writer.flush();
-//				System.out.print(sw.toString());
-//				writer.close();
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//			}
-//
+//		PrintWriter writer;
+//		try (StringWriter sw = new StringWriter();) {
+//			writer = new PrintWriter(sw);
+//			parseUseStmt.accept(new ASTPrinter(writer));
+//			writer.flush();
+//			System.out.print(sw.toString());
+//		} catch (Exception e) {
+//			e.printStackTrace();
 //		}
+
+		try (FileInputStream fis = new FileInputStream(new File("simple-sql-parser-short/operations.sql"))) {
+
+			Tokenizer tokenizer = new Tokenizer(fis);
+			Token token;
+			while ((token = tokenizer.next()) != null) {
+				System.out.println(token);
+				System.out.println("============================================");
+			}
+
+			Parser parser = new Parser(fis);
+			Statement statement = parser.parseStatements();
+
+			PrintWriter writer;
+			StringWriter sw = new StringWriter();
+			try {
+				writer = new PrintWriter(sw);
+				statement.accept(new ASTPrinter(writer));
+				writer.flush();
+				System.out.print(sw.toString());
+				writer.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+		}
 
 	}
 

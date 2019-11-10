@@ -143,7 +143,6 @@ public class Tokenizer {
 			return TokenClass.RPAR;
 		case '(':
 			return TokenClass.LPAR;
-
 		case '_':
 			return TokenClass.UNDERSCORE;
 		case ',':

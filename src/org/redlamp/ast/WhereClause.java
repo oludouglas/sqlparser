@@ -4,9 +4,9 @@ import java.util.List;
 
 public class WhereClause implements ASTNode {
 
-	public List<Expr> expr;
+	public List<Identifier> expr;
 
-	public WhereClause(List<Expr> expr) {
+	public WhereClause(List<Identifier> expr) {
 		super();
 		this.expr = expr;
 	}

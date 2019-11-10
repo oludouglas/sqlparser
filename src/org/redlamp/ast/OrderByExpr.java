@@ -1,14 +1,16 @@
 package org.redlamp.ast;
 
+import java.util.List;
+
 public class OrderByExpr implements ASTNode {
 
-	public Identifier expr;
-	public String asc;
+	public List<Identifier> expr;
+	public boolean desc;
 
-	public OrderByExpr(Identifier expr, String asc) {
+	public OrderByExpr(List<Identifier> expr, boolean desc) {
 		super();
 		this.expr = expr;
-		this.asc = asc;
+		this.desc = desc;
 	}
 
 	@Override

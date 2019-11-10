@@ -4,11 +4,11 @@ import java.util.List;
 
 public class Delete implements ASTNode {
 
-	public List<String> columns;
+	public List<Identifier> columns;
 	public Table table;
-	public List<Expr> conditions;
+	public WhereClause conditions;
 
-	public Delete(List<String> columns, Table table, List<Expr> conditions) {
+	public Delete(List<Identifier> columns, Table table, WhereClause conditions) {
 		super();
 		this.columns = columns;
 		this.table = table;
