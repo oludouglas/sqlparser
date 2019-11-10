@@ -4,24 +4,27 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import org.redlamp.ast.Select;
+import org.redlamp.ast.Insert;
 import org.redlamp.expr.ASTPrinter;
 
 public class MainClass {
 
+	static String use = "USE database1;";
+	static String select = "SELECT id, name, address FROM users WHERE is_customer IS NOT NULL ORDER BY created;";
+	static String insert = "INSERT INTO user_notes (id, user_id, note, created) VALUES (1, 1, \"Note 1\", NOW());";
+	static String delete = "DELETE FROM database2.logs WHERE id < 1000;";
+
 	public static void main(String[] args) throws IOException {
 
-		Parser parser = new Parser("SELECT id, name, address FROM users WHERE is_customer IS NOT NULL ORDER BY created;");
-		Select parseUseStmt = parser.parseSelectStmt();
+		Parser parser = new Parser(insert);
+		Insert parseUseStmt = parser.parseInsertStmt();
 
 		PrintWriter writer;
-		StringWriter sw = new StringWriter();
-		try {
+		try (StringWriter sw = new StringWriter();) {
 			writer = new PrintWriter(sw);
 			parseUseStmt.accept(new ASTPrinter(writer));
 			writer.flush();
 			System.out.print(sw.toString());
-			writer.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

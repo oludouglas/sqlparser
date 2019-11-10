@@ -22,4 +22,8 @@ public interface ASTVisitor<T> {
 
 	public T visitUse(Use baseType);
 
+	public T visitFunc(Func func);
+
+	public T visitExpr(Expr func);
+
 }

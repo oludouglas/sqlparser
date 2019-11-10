@@ -7,13 +7,12 @@ public class StrLiteral extends Expr {
 	String name;
 
 	public StrLiteral(String name) {
-		super();
 		this.name = name;
 	}
 
 	@Override
 	public <T> T accept(ASTVisitor<T> v) {
-		return v.visitBaseType(BaseType.CHAR);
+		return v.visitBaseType(BaseType.VARCHAR);
 	}
 
 }

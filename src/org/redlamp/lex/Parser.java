@@ -8,6 +8,7 @@ import org.redlamp.ast.BaseLiteral;
 import org.redlamp.ast.Expr;
 import org.redlamp.ast.Func;
 import org.redlamp.ast.Identifier;
+import org.redlamp.ast.Insert;
 import org.redlamp.ast.IntLiteral;
 import org.redlamp.ast.OrderByExpr;
 import org.redlamp.ast.Select;
@@ -77,6 +78,30 @@ public class Parser {
 		expect(TokenClass.END);
 	}
 
+	Use parseUseStmt() {
+		Use use = new Use();
+		expect(TokenClass.KEYWORD);
+		use.command = token.data;
+		if (accept(TokenClass.IDENT)) {
+			expect(TokenClass.IDENT);
+			use.database = token.data;
+		}
+		expect(TokenClass.END);
+		return use;
+	}
+
+	Insert parseInsertStmt() {
+		expect(TokenClass.KEYWORD); // insert
+		expect(TokenClass.KEYWORD); // into
+		Expr tableName = parseIdent();
+		Func tableColumns = parseFuncCall();
+		tableColumns.expr = tableName;
+		Expr valuesName = parseKeyWord();
+		Func values = parseFuncCall(); // values list
+		values.expr = valuesName;
+		return new Insert(tableColumns, values);
+	}
+
 	Select parseSelectStmt() {
 		expect(TokenClass.KEYWORD);
 		List<Identifier> identifiers = parsArgRep();
@@ -95,12 +120,10 @@ public class Parser {
 
 	private List<Expr> parseConditions() {
 		List<Expr> conditions = null;
-
 		if (accept(TokenClass.KEYWORD)) { // if where clause is supported
 			expect(TokenClass.KEYWORD); // where
 			conditions = parseAssign();
 		}
-
 		return conditions;
 	}
 
@@ -114,23 +137,16 @@ public class Parser {
 		return relations;
 	}
 
-	Use parseUseStmt() {
-		Use use = new Use();
-		expect(TokenClass.KEYWORD);
-		use.command = token.data;
-		if (accept(TokenClass.IDENT)) {
-			expect(TokenClass.IDENT);
-			use.database = token.data;
-		}
-		expect(TokenClass.END);
-		return use;
+	Table parseTable() {
+		expect(TokenClass.IDENT); // MUST HAVE
+		return new Table(token.data);
 	}
 
 	Func parseFuncCall() {
 		expect(TokenClass.LPAR);
 		List<Identifier> parseArgList = parseArgList();
 		expect(TokenClass.RPAR);
-		return new Func("", parseArgList);
+		return new Func(null, parseArgList);
 	}
 
 	List<Identifier> parseArgList() {
@@ -139,16 +155,19 @@ public class Parser {
 
 	List<Identifier> parsArgRep() {
 		List<Identifier> identifiers = new ArrayList<Identifier>();
+		if (accept(TokenClass.RPAR))
+			return identifiers;
+
 		if (accept(TokenClass.IDENT) || accept(TokenClass.NUMBER) || accept(TokenClass.STR)) {
 			nextToken();
-			identifiers.add(new Identifier(token.data));
+			identifiers.add(new Identifier(token));
 		}
 		if (accept(TokenClass.COMMA)) {
 			nextToken();
 			if (accept(TokenClass.IDENT) || accept(TokenClass.NUMBER) || accept(TokenClass.STR)
 					|| accept(TokenClass.KEYWORD)) {
 				nextToken();
-				identifiers.add(new Identifier(token.data));
+				identifiers.add(new Identifier(token));
 				parsArgRep();
 			} else
 				error();
@@ -159,7 +178,6 @@ public class Parser {
 	List<Expr> conditions = new ArrayList<Expr>();
 
 	List<Expr> parseAssign() {
-
 		expect(TokenClass.IDENT);
 		if (accept(TokenClass.LT)) {
 			expect(TokenClass.LT);
@@ -169,14 +187,6 @@ public class Parser {
 			expect(TokenClass.KEYWORD);
 			conditions.add(parseExpr());
 		}
-//		if (accept(TokenClass.KEYWORD)) {
-//			expect(TokenClass.KEYWORD); // is
-//			expect(TokenClass.KEYWORD); // not
-//			expect(TokenClass.KEYWORD); // null
-//			expect(TokenClass.KEYWORD); // order
-//			expect(TokenClass.KEYWORD); // by
-//			expect(TokenClass.IDENT); // created
-//		}
 		return conditions;
 	}
 

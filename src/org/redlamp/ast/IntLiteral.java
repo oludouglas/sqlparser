@@ -7,7 +7,6 @@ public class IntLiteral extends Expr {
 	int number;
 
 	public IntLiteral(int i) {
-		super();
 		this.number = i;
 	}
 

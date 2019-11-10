@@ -1,16 +1,14 @@
 package org.redlamp.ast;
 
-import java.util.List;
-
 public class Insert implements ASTNode {
 
-	public Table relation;
-	public List<Expr> columns;
-	public List<Expr> values;
+	public Expr relation;
+	public Func columns;
+	public Func values;
 
-	public Insert(Table relation, List<Expr> columns, List<Expr> values) {
+	public Insert(Func columns, Func values) {
 		super();
-		this.relation = relation;
+		this.relation = columns.expr;
 		this.columns = columns;
 		this.values = values;
 	}
